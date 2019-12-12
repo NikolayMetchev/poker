@@ -7,6 +7,10 @@ import java.time.LocalDateTime
 import java.util.*
 
 @ExperimentalUnsignedTypes
+fun computeOdds(player1Card1: Card, player1Card2: Card, player2Card1: Card, player2Card2: Card) =
+  computeOdds(Hand(player1Card1, player1Card2), Hand(player2Card1, player2Card2))
+
+@ExperimentalUnsignedTypes
 fun computeOdds(player1Hand: Hand, player2Hand: Hand): Map<HandResult, Int> {
   val deck = Deck()
   deck.remove(player1Hand.cards)
@@ -21,7 +25,7 @@ fun computeOdds(player1Hand: Hand, player2Hand: Hand): Map<HandResult, Int> {
 @ExperimentalUnsignedTypes
 fun main() {
   println(LocalDateTime.now())
-  println(computeOdds(Hand(ACE_OF_DIAMONDS, ACE_OF_CLUBS), Hand(KING_OF_DIAMONDS, KING_OF_CLUBS)))
+  println(computeOdds(Hand(QUEEN_OF_DIAMONDS, JACK_OF_CLUBS), Hand(JACK_OF_SPADES, `10_OF_HEARTS`)))
   println(LocalDateTime.now())
 }
 
