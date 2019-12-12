@@ -2,6 +2,7 @@ package org.metchev.poker
 
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import org.metchev.poker.Card.*
 import java.time.LocalDateTime
 import java.util.*
 
@@ -20,7 +21,7 @@ fun computeOdds(player1Hand: Hand, player2Hand: Hand): Map<HandResult, Int> {
 @ExperimentalUnsignedTypes
 fun main() {
   println(LocalDateTime.now())
-  println(computeOdds(Hand(Card.ACE_OF_DIAMONDS, Card.ACE_OF_CLUBS), Hand(Card.ACE_OF_HEARTS, Card.ACE_OF_SPADES)))
+  println(computeOdds(Hand(ACE_OF_DIAMONDS, ACE_OF_CLUBS), Hand(KING_OF_DIAMONDS, KING_OF_CLUBS)))
   println(LocalDateTime.now())
 }
 

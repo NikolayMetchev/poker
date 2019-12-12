@@ -24,7 +24,7 @@ class HandTypeSpec : Spek({
         `4_OF_HEARTS`,
         `9_OF_SPADES`,
 
-        Player1Wins,
+        PLAYER_1_WINS,
         HIGH_CARD,
         HIGH_CARD
       )
@@ -42,7 +42,7 @@ class HandTypeSpec : Spek({
         `4_OF_HEARTS`,
         `7_OF_DIAMONDS`,
 
-        Player2Wins,
+        PLAYER_2_WINS,
         STRAIGHT,
         FLUSH
       )
@@ -60,12 +60,12 @@ class HandTypeSpec : Spek({
         QUEEN_OF_HEARTS,
         `7_OF_DIAMONDS`,
 
-        Player2Wins,
+        PLAYER_2_WINS,
         FOUR_OF_A_KIND,
         FOUR_OF_A_KIND
       )
     }
-    it("2 Kicker Plays in 3 of a kind", timeout= 0L) {
+    it("2 Kickers Play in 3 of a kind", timeout= 0L) {
       assertWinner(
         ACE_OF_CLUBS, `6_OF_CLUBS`,
 
@@ -77,11 +77,48 @@ class HandTypeSpec : Spek({
         JACK_OF_CLUBS,
         `7_OF_DIAMONDS`,
 
-        Player2Wins,
+        PLAYER_2_WINS,
         THREE_OF_A_KIND,
         THREE_OF_A_KIND
       )
     }
+
+    it("2 Kickers Play in one pair", timeout= 0L) {
+      assertWinner(
+        ACE_OF_CLUBS, `10_OF_CLUBS`,
+
+        KING_OF_DIAMONDS, ACE_OF_DIAMONDS,
+
+        `2_OF_DIAMONDS`,
+        QUEEN_OF_SPADES,
+        QUEEN_OF_CLUBS,
+        JACK_OF_CLUBS,
+        `7_OF_DIAMONDS`,
+
+        PLAYER_2_WINS,
+        ONE_PAIR,
+        ONE_PAIR
+      )
+    }
+
+    it("Higher one pair wins", timeout= 0L) {
+      assertWinner(
+        QUEEN_OF_HEARTS, `10_OF_CLUBS`,
+
+        KING_OF_DIAMONDS, `7_OF_HEARTS`,
+
+        `2_OF_DIAMONDS`,
+        ACE_OF_SPADES,
+        QUEEN_OF_CLUBS,
+        JACK_OF_CLUBS,
+        `7_OF_DIAMONDS`,
+
+        PLAYER_1_WINS,
+        ONE_PAIR,
+        ONE_PAIR
+      )
+    }
+
     it("Same kicker equals split pot", timeout = 0L) {
       assertWinner(
         ACE_OF_CLUBS, `6_OF_CLUBS`,
@@ -94,7 +131,7 @@ class HandTypeSpec : Spek({
         QUEEN_OF_HEARTS,
         `7_OF_DIAMONDS`,
 
-        Split,
+        SPLIT,
         FOUR_OF_A_KIND,
         FOUR_OF_A_KIND
       )
@@ -112,9 +149,26 @@ class HandTypeSpec : Spek({
         JACK_OF_HEARTS,
         `6_OF_DIAMONDS`,
 
-        Player1Wins,
+        PLAYER_1_WINS,
         TWO_PAIR,
         TWO_PAIR
+      )
+    }
+    it("Higher 3 of a kind wins", timeout = 0L) {
+      assertWinner(
+        KING_OF_DIAMONDS, KING_OF_HEARTS,
+
+        ACE_OF_CLUBS, ACE_OF_DIAMONDS,
+
+        QUEEN_OF_DIAMONDS,
+        ACE_OF_SPADES,
+        KING_OF_CLUBS,
+        JACK_OF_HEARTS,
+        `6_OF_DIAMONDS`,
+
+        PLAYER_2_WINS,
+        THREE_OF_A_KIND,
+        THREE_OF_A_KIND
       )
     }
     it("Higher kicker of the 2 pair", timeout = 0L) {
@@ -129,7 +183,63 @@ class HandTypeSpec : Spek({
         JACK_OF_HEARTS,
         `6_OF_DIAMONDS`,
 
-        Player1Wins,
+        PLAYER_1_WINS,
+        TWO_PAIR,
+        TWO_PAIR
+      )
+    }
+
+    it("Same kicker of the 2 pair", timeout = 0L) {
+      assertWinner(
+        KING_OF_DIAMONDS, ACE_OF_DIAMONDS,
+
+        ACE_OF_CLUBS, KING_OF_HEARTS,
+
+        QUEEN_OF_DIAMONDS,
+        ACE_OF_SPADES,
+        JACK_OF_CLUBS,
+        JACK_OF_HEARTS,
+        `6_OF_DIAMONDS`,
+
+        SPLIT,
+        TWO_PAIR,
+        TWO_PAIR
+      )
+    }
+
+    it("Longer Straight", timeout = 0L) {
+      assertWinner(
+        `6_OF_HEARTS`, `5_OF_HEARTS`,
+
+        QUEEN_OF_CLUBS, KING_OF_HEARTS,
+
+        `9_OF_DIAMONDS`,
+        `8_OF_HEARTS`,
+        `7_OF_CLUBS`,
+        JACK_OF_HEARTS,
+        `10_OF_DIAMONDS`,
+
+        PLAYER_2_WINS,
+        STRAIGHT,
+        STRAIGHT
+      )
+    }
+
+
+
+    it("2 pair split", timeout = 0L) {
+      assertWinner(
+        `5_OF_CLUBS`, ACE_OF_DIAMONDS,
+
+        ACE_OF_CLUBS, `6_OF_CLUBS`,
+
+        QUEEN_OF_DIAMONDS,
+        ACE_OF_SPADES,
+        JACK_OF_CLUBS,
+        JACK_OF_HEARTS,
+        `6_OF_DIAMONDS`,
+
+        SPLIT,
         TWO_PAIR,
         TWO_PAIR
       )
@@ -147,7 +257,7 @@ class HandTypeSpec : Spek({
         JACK_OF_HEARTS,
         JACK_OF_DIAMONDS,
 
-        Player1Wins,
+        PLAYER_1_WINS,
         FULL_HOUSE,
         FLUSH
       )
@@ -165,7 +275,24 @@ class HandTypeSpec : Spek({
         `10_OF_DIAMONDS`,
         `6_OF_DIAMONDS`,
 
-        Player2Wins,
+        PLAYER_2_WINS,
+        STRAIGHT_FLUSH,
+        STRAIGHT_FLUSH
+      )
+    }
+    it("Higher Straight Flush!", timeout = 0L) {
+      assertWinner(
+        ACE_OF_DIAMONDS, `6_OF_CLUBS`,
+        `9_OF_DIAMONDS`, KING_OF_HEARTS,
+
+
+        KING_OF_DIAMONDS,
+        QUEEN_OF_DIAMONDS,
+        JACK_OF_DIAMONDS,
+        `10_OF_DIAMONDS`,
+        `6_OF_DIAMONDS`,
+
+        PLAYER_1_WINS,
         STRAIGHT_FLUSH,
         STRAIGHT_FLUSH
       )
@@ -183,11 +310,66 @@ class HandTypeSpec : Spek({
         `10_OF_SPADES`,
         `6_OF_DIAMONDS`,
 
-        Player2Wins,
+        PLAYER_2_WINS,
         STRAIGHT,
         STRAIGHT
       )
     }
+
+    it("Wheel barrow is the lowest straight Higher Straight", timeout = 0L) {
+      assertWinner(
+        `6_OF_DIAMONDS`, KING_OF_HEARTS,
+
+        ACE_OF_DIAMONDS, `7_OF_CLUBS`,
+
+        KING_OF_DIAMONDS,
+        `5_OF_SPADES`,
+        `4_OF_SPADES`,
+        `3_OF_SPADES`,
+        `2_OF_DIAMONDS`,
+
+        PLAYER_1_WINS,
+        STRAIGHT,
+        STRAIGHT
+      )
+    }
+
+    it("Wheel barrow is the lowest straight Higher Straight", timeout = 0L) {
+      assertWinner(
+        ACE_OF_DIAMONDS, `7_OF_CLUBS`,
+        `6_OF_DIAMONDS`, KING_OF_HEARTS,
+
+
+        KING_OF_DIAMONDS,
+        `5_OF_SPADES`,
+        `4_OF_SPADES`,
+        `3_OF_SPADES`,
+        `2_OF_DIAMONDS`,
+
+        PLAYER_2_WINS,
+        STRAIGHT,
+        STRAIGHT
+      )
+    }
+
+    it("Straight Split", timeout = 0L) {
+      assertWinner(
+        `9_OF_DIAMONDS`, `10_OF_HEARTS`,
+
+        `10_OF_DIAMONDS`, `6_OF_CLUBS`,
+
+        KING_OF_DIAMONDS,
+        QUEEN_OF_SPADES,
+        JACK_OF_SPADES,
+        `9_OF_SPADES`,
+        `6_OF_DIAMONDS`,
+
+        SPLIT,
+        STRAIGHT,
+        STRAIGHT
+      )
+    }
+
 
 
     it("Higher Full House!", timeout = 0L) {
@@ -204,7 +386,7 @@ class HandTypeSpec : Spek({
         JACK_OF_HEARTS,
         JACK_OF_DIAMONDS,
 
-        Player2Wins,
+        PLAYER_2_WINS,
         FULL_HOUSE,
         FULL_HOUSE
       )
@@ -222,7 +404,7 @@ class HandTypeSpec : Spek({
         `9_OF_HEARTS`,
         `8_OF_DIAMONDS`,
 
-        Player2Wins,
+        PLAYER_2_WINS,
         ONE_PAIR,
         FLUSH
       )
@@ -237,11 +419,58 @@ class HandTypeSpec : Spek({
         JACK_OF_HEARTS,
         `9_OF_DIAMONDS`,
         `8_OF_DIAMONDS`,
-        Split,
+        SPLIT,
         ONE_PAIR,
         ONE_PAIR
       )
     }
+
+    it("Full house vs 3 of a kind") {
+      assertWinner(
+        ACE_OF_DIAMONDS, ACE_OF_CLUBS,
+        `7_OF_DIAMONDS`, `2_OF_CLUBS`,
+
+        ACE_OF_HEARTS,
+        KING_OF_HEARTS,
+        QUEEN_OF_HEARTS,
+        KING_OF_DIAMONDS,
+        KING_OF_SPADES,
+
+        PLAYER_1_WINS,
+        FULL_HOUSE,
+        THREE_OF_A_KIND)
+    }
+    it("Full house vs Full house", timeout = 0L) {
+      assertWinner(
+        JACK_OF_DIAMONDS, JACK_OF_CLUBS,
+        QUEEN_OF_DIAMONDS, QUEEN_OF_CLUBS,
+
+        JACK_OF_HEARTS,
+        KING_OF_HEARTS,
+        QUEEN_OF_HEARTS,
+        KING_OF_DIAMONDS,
+        KING_OF_SPADES,
+
+        PLAYER_2_WINS,
+        FULL_HOUSE,
+        FULL_HOUSE)
+    }
+    it("Full house vs Full house", timeout = 0L) {
+      assertWinner(
+        `10_OF_HEARTS`, `9_OF_SPADES`,
+        `9_OF_DIAMONDS`, `9_OF_CLUBS`,
+
+        ACE_OF_HEARTS,
+        JACK_OF_DIAMONDS,
+        `9_OF_HEARTS`,
+        `10_OF_DIAMONDS`,
+        `10_OF_SPADES`,
+
+        PLAYER_1_WINS,
+        FULL_HOUSE,
+        FULL_HOUSE)
+    }
+
   }
   describe("Best HandType") {
     it("Should be High Card") {
@@ -289,6 +518,63 @@ class HandTypeSpec : Spek({
           )
         )
 
+      }
+
+      it("Not Straights") {
+        assertFalse(
+          STRAIGHT.check(
+            ACE_OF_HEARTS,
+            KING_OF_HEARTS,
+            QUEEN_OF_HEARTS,
+            JACK_OF_HEARTS,
+            `2_OF_DIAMONDS`
+          )
+        )
+        assertFalse(
+          STRAIGHT.check(
+            ACE_OF_HEARTS,
+            KING_OF_HEARTS,
+            QUEEN_OF_HEARTS,
+            `3_OF_HEARTS`,
+            `2_OF_DIAMONDS`
+          )
+        )
+        assertFalse(
+          STRAIGHT.check(
+            ACE_OF_HEARTS,
+            KING_OF_HEARTS,
+            `4_OF_HEARTS`,
+            `3_OF_HEARTS`,
+            `2_OF_DIAMONDS`
+          )
+        )
+        assertFalse(
+          STRAIGHT_FLUSH.check(
+            ACE_OF_HEARTS,
+            KING_OF_HEARTS,
+            `4_OF_HEARTS`,
+            `3_OF_HEARTS`,
+            `2_OF_HEARTS`
+          )
+        )
+        assertFalse(
+          STRAIGHT_FLUSH.check(
+            ACE_OF_HEARTS,
+            KING_OF_HEARTS,
+            QUEEN_OF_HEARTS,
+            JACK_OF_HEARTS,
+            `2_OF_HEARTS`
+          )
+        )
+        assertFalse(
+          STRAIGHT_FLUSH.check(
+            ACE_OF_HEARTS,
+            KING_OF_HEARTS,
+            QUEEN_OF_HEARTS,
+            `3_OF_HEARTS`,
+            `2_OF_HEARTS`
+          )
+        )
       }
       it("Find Straight Flush") {
         assertTrue(

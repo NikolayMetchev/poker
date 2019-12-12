@@ -1,6 +1,6 @@
 package org.metchev.poker
 
-import org.metchev.poker.Card.`10_OF_CLUBS`
+import org.metchev.poker.Card.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import kotlin.test.assertEquals
