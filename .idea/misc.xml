@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ExternalStorageConfigurationManager" enabled="true" />
+  <component name="NodePackageJsonFileManager">
+    <packageJsonPaths />
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_13" default="false" project-jdk-name="13" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/classes" />
+  </component>
+  <component name="jetbrains.communicator.idea.IdProvider" IDEtalkID="6E955B7274D3E77246BC83C7BB5664E5" />
+</project>
