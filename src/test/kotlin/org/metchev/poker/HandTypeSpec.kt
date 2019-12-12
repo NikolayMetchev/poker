@@ -494,30 +494,30 @@ class HandTypeSpec : Spek({
     context("init") {
       it("Should be a Wheel straight") {
         assertTrue(
-          STRAIGHT.check(
+          STRAIGHT.check(arrayOf(
             ACE_OF_HEARTS,
             `2_OF_HEARTS`,
             `3_OF_HEARTS`,
             `4_OF_HEARTS`,
-            `5_OF_HEARTS`
+            `5_OF_HEARTS`)
           )
         )
         assertTrue(
-          STRAIGHT.check(
+          STRAIGHT.check(arrayOf(
             ACE_OF_DIAMONDS,
             `2_OF_HEARTS`,
             `3_OF_HEARTS`,
             `4_OF_CLUBS`,
-            `5_OF_HEARTS`
+            `5_OF_HEARTS`)
           )
         )
         assertTrue(
-          STRAIGHT_FLUSH.check(
+          STRAIGHT_FLUSH.check(arrayOf(
             ACE_OF_HEARTS,
             `2_OF_HEARTS`,
             `3_OF_HEARTS`,
             `4_OF_HEARTS`,
-            `5_OF_HEARTS`
+            `5_OF_HEARTS`)
           )
         )
 
@@ -525,57 +525,57 @@ class HandTypeSpec : Spek({
 
       it("Not Straights") {
         assertFalse(
-          STRAIGHT.check(
+          STRAIGHT.check(arrayOf(
             ACE_OF_HEARTS,
             KING_OF_HEARTS,
             QUEEN_OF_HEARTS,
             JACK_OF_HEARTS,
-            `2_OF_DIAMONDS`
+            `2_OF_DIAMONDS`)
           )
         )
         assertFalse(
-          STRAIGHT.check(
+          STRAIGHT.check(arrayOf(
             ACE_OF_HEARTS,
             KING_OF_HEARTS,
             QUEEN_OF_HEARTS,
             `3_OF_HEARTS`,
-            `2_OF_DIAMONDS`
+            `2_OF_DIAMONDS`)
           )
         )
         assertFalse(
-          STRAIGHT.check(
+          STRAIGHT.check(arrayOf(
             ACE_OF_HEARTS,
             KING_OF_HEARTS,
             `4_OF_HEARTS`,
             `3_OF_HEARTS`,
-            `2_OF_DIAMONDS`
+            `2_OF_DIAMONDS`)
           )
         )
         assertFalse(
-          STRAIGHT_FLUSH.check(
+          STRAIGHT_FLUSH.check(arrayOf(
             ACE_OF_HEARTS,
             KING_OF_HEARTS,
             `4_OF_HEARTS`,
             `3_OF_HEARTS`,
-            `2_OF_HEARTS`
+            `2_OF_HEARTS`)
           )
         )
         assertFalse(
-          STRAIGHT_FLUSH.check(
+          STRAIGHT_FLUSH.check(arrayOf(
             ACE_OF_HEARTS,
             KING_OF_HEARTS,
             QUEEN_OF_HEARTS,
             JACK_OF_HEARTS,
-            `2_OF_HEARTS`
+            `2_OF_HEARTS`)
           )
         )
         assertFalse(
-          STRAIGHT_FLUSH.check(
+          STRAIGHT_FLUSH.check(arrayOf(
             ACE_OF_HEARTS,
             KING_OF_HEARTS,
             QUEEN_OF_HEARTS,
             `3_OF_HEARTS`,
-            `2_OF_HEARTS`
+            `2_OF_HEARTS`)
           )
         )
       }
@@ -584,7 +584,7 @@ class HandTypeSpec : Spek({
         assertEquals(
           listOf(`10_OF_HEARTS`, `8_OF_HEARTS`, `9_OF_HEARTS`, JACK_OF_CLUBS, QUEEN_OF_CLUBS).sortedBy { it.face },
           STRAIGHT.getCards(
-            listOf(
+            arrayOf(
               `7_OF_HEARTS`,
               `8_OF_HEARTS`,
               `9_OF_HEARTS`,
@@ -598,30 +598,30 @@ class HandTypeSpec : Spek({
       }
       it("Find Straight Flush") {
         assertTrue(
-          STRAIGHT_FLUSH.check(
+          STRAIGHT_FLUSH.check(arrayOf(
             ACE_OF_HEARTS,
             KING_OF_HEARTS,
             QUEEN_OF_HEARTS,
             JACK_OF_HEARTS,
-            `10_OF_HEARTS`
+            `10_OF_HEARTS`)
           )
         )
         assertFalse(
-          STRAIGHT_FLUSH.check(
+          STRAIGHT_FLUSH.check(arrayOf(
             ACE_OF_CLUBS,
             KING_OF_HEARTS,
             QUEEN_OF_HEARTS,
             JACK_OF_HEARTS,
-            `10_OF_HEARTS`
+            `10_OF_HEARTS`)
           )
         )
         assertFalse(
-          STRAIGHT_FLUSH.check(
+          STRAIGHT_FLUSH.check(arrayOf(
             ACE_OF_HEARTS,
             KING_OF_HEARTS,
             QUEEN_OF_HEARTS,
             JACK_OF_HEARTS,
-            `9_OF_HEARTS`
+            `9_OF_HEARTS`)
           )
         )
       }

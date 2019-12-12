@@ -23,11 +23,31 @@ fun computeOdds(player1Hand: Hand, player2Hand: Hand): Map<HandResult, Int> {
 }
 
 @ExperimentalUnsignedTypes
+suspend fun computeOddsAsync(player1Hand: Hand, player2Hand: Hand): Map<HandResult, Int> {
+  val deck = Deck()
+  deck.remove(player1Hand.cards)
+  deck.remove(player2Hand.cards)
+  val nTuples = deck.nTuples(5u)
+  return nTuples
+    .pmap { computeWinner(player1Hand, player2Hand, CommunityCards(it)) }
+    .groupingBy { it.first }
+    .eachCountTo(TreeMap())
+}
+
+@ExperimentalUnsignedTypes
 fun main() {
   println(LocalDateTime.now())
-  println(computeOdds(Hand(QUEEN_OF_DIAMONDS, JACK_OF_CLUBS), Hand(JACK_OF_SPADES, `10_OF_HEARTS`)))
+  println(computeOdds(QUEEN_OF_DIAMONDS, JACK_OF_CLUBS, JACK_OF_SPADES, `10_OF_HEARTS`))
   println(LocalDateTime.now())
 }
+
+//@ExperimentalUnsignedTypes
+//fun main() = runBlocking {
+//  println(LocalDateTime.now())
+//  println(computeOddsAsync(Hand(QUEEN_OF_DIAMONDS, JACK_OF_CLUBS), Hand(JACK_OF_SPADES, `10_OF_HEARTS`)))
+//  println(LocalDateTime.now())
+//}
+
 
 suspend fun <A, B> Sequence<A>.pmap(f: suspend (A) -> B): List<B> = coroutineScope {
   println("in parallel")
