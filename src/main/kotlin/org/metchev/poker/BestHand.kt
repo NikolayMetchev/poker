@@ -82,21 +82,6 @@ private fun highestAnyPair(cards: List<Card>): Array<Card> =
       .toTypedArray(),
     2)
 
-private fun hasAnyPair(cards: List<Card>): Boolean {
-  for (card in cards) {
-    var i = 0
-    for (innerCard in cards) {
-      if (innerCard.face == card.face) {
-        i++
-        if (i == 2) {
-          return true
-        }
-      }
-    }
-  }
-  return false
-}
-
 private fun nOfAKindComparer(n: Int): (Array<Card>, Array<Card>) -> HandResult =
   { player1Cards: Array<Card>, player2Cards: Array<Card> ->
     val (nOfAKindPlayer1Cards, kickers1) = nOfAKindFinder(player1Cards, n)
@@ -248,8 +233,37 @@ enum class HandType(
 
   FOUR_OF_A_KIND(nOfAKindChecker(4), nOfAKindFinder(4), nOfAKindComparer(4)),
 
-  FULL_HOUSE({
-    THREE_OF_A_KIND.check(this) && hasAnyPair(this.toList() - nOfAKindFinder(this, 3).first)
+  FULL_HOUSE(checker@{
+    var threeOfAKindFace: Face? = null
+    for (card in this) {
+      var i = 0
+      for (innerCard in this) {
+        if (innerCard.face == card.face) {
+          i++
+        }
+      }
+      if (i == 3) {
+        threeOfAKindFace = card.face
+      }
+    }
+    if (threeOfAKindFace == null) {
+      return@checker false
+    }
+    for (card in this) {
+      if (card.face == threeOfAKindFace) {
+        continue
+      }
+      var i = 0
+      for (innerCard in this) {
+        if (innerCard.face == card.face) {
+          i++
+          if (i == 2) {
+            return@checker true
+          }
+        }
+      }
+    }
+    false
   }, {
     nOfAKindFinder(this, 3).first + highestAnyPair(this.toList() - nOfAKindFinder(this, 3).first)
   }, { player1Cards, player2Cards ->

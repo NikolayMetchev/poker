@@ -370,8 +370,6 @@ class HandTypeSpec : Spek({
       )
     }
 
-
-
     it("Higher Full House!") {
       assertWinner(
         KING_OF_DIAMONDS,
