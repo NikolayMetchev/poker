@@ -24,17 +24,32 @@ private fun nOfAKindFinder(n: Int): Array<out Card>.() -> Array<Card> = {
 }
 
 private fun nOfAKindFinder(cards: Array<out Card>, n: Int): Pair<Array<Card>, Array<Card>> {
-  val nOfAKind = cards.asSequence()
-    .groupByTo(TreeMap(compareByDescending { it })) { it.face }
-    .filterValues { it.size == n }
-    .iterator()
-    .next()
-    .value
-    .toTypedArray()
+  val bestResult: Array<Card> = Array(n) { Card.`2_OF_HEARTS` }
+  var bestFace: Face? = null
+  val currentResult = Array(n) { Card.`2_OF_HEARTS` }
+  for (card in cards) {
+    if (bestFace != null && bestFace > card.face) {
+      continue
+    }
+    var i = -1
+    for (innerCard in cards) {
+      if (innerCard.face == card.face) {
+        if (++i >= n) {
+          break
+        } else {
+          currentResult[i] = innerCard
+        }
+      }
+    }
+    if (i == n - 1) {
+      System.arraycopy(currentResult, 0, bestResult, 0, currentResult.size)
+      bestFace = card.face
+    }
+  }
 
-  val kickers = highestCards((cards.toList() - nOfAKind).toTypedArray(), 5 - n)
+  val kickers = highestCards((cards.toList() - bestResult).toTypedArray(), 5 - n)
 
-  return Pair(nOfAKind, kickers)
+  return Pair(bestResult, kickers)
 }
 
 private fun highestAnyPair(cards: List<Card>): Array<Card> =
@@ -66,7 +81,10 @@ private fun nOfAKindComparer(n: Int): (Array<Card>, Array<Card>) -> HandResult =
   }
 
 private fun straightFaceComparer(player1Cards: Array<Card>, player2Cards: Array<Card>) =
-  highestFaceComparer(player1Cards.filter { it.face != ACE }.toTypedArray(), player2Cards.filter { it.face != ACE }.toTypedArray())
+  highestFaceComparer(
+    player1Cards.filter { it.face != ACE }.toTypedArray(),
+    player2Cards.filter { it.face != ACE }.toTypedArray()
+  )
 
 private fun highestFaceComparer(player1Cards: Array<Card>, player2Cards: Array<Card>) =
   highestFaceComparer(player1Cards, player2Cards) { HandResult.SPLIT }
@@ -96,15 +114,13 @@ private fun highestFaceComparer(
   return equalCase()
 }
 
-private fun highestCards(cards: Array<out Card>, n: Int = 5): Array<Card> =
-  cards.asSequence()
-    .sortedByDescending { it.face }
-    .take(n)
-    .toList()
-    .toTypedArray()
+private fun highestCards(cards: Array<out Card>, n: Int = 5): Array<Card> {
+  cards.sortByDescending { it.face }
+  return Array(n) {cards[it]}
+}
 
 private fun findStraight(cards: Array<out Card>, next: (Card) -> Card, hasNext: (Card) -> Boolean): Array<Card> {
-  cards.sortedByDescending {it.face}.asSequence().forEach {
+  cards.sortedByDescending { it.face }.asSequence().forEach {
     var previousCard = it
     val result = mutableListOf<Card>()
     while (hasNext(previousCard)) {
@@ -239,6 +255,7 @@ enum class HandType(
 
   //fun check(cards: Array<Card>) = checker(cards)
   fun check(cards: Array<out Card>) = checker(cards)
+
   fun getCards(cards: Array<Card>): Array<Card> = getter(cards)
   fun compareCards(player1Cards: Array<Card>, player2Cards: Array<Card>): HandResult =
     comparer(player1Cards, player2Cards)
