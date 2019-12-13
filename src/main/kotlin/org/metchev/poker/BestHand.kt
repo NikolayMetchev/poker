@@ -30,13 +30,18 @@ private fun nOfAKindFinder(cards: Array<out Card>, n: Int): Pair<Array<Card>, Ar
   var bestFace: Face? = null
   val currentResult = Array(n) { Card.`2_OF_HEARTS` }
   val currentOthers = Array(cards.size - n) { Card.`2_OF_HEARTS` }
-  for (card in cards) {
+  var index = 0
+  while (index < cards.size - n + 1) {
+    val card = cards[index]
     if (bestFace != null && bestFace > card.face) {
+      index++
       continue
     }
     var i = -1
     var j = -1
-    for (innerCard in cards) {
+    var innerIndex = 0
+    while (innerIndex < cards.size) {
+      val innerCard = cards[innerIndex]
       if (innerCard.face == card.face) {
         if (++i >= n) {
           break
@@ -50,12 +55,14 @@ private fun nOfAKindFinder(cards: Array<out Card>, n: Int): Pair<Array<Card>, Ar
           currentOthers[j] = innerCard
         }
       }
+      innerIndex++
     }
     if (i == n - 1 && j == cards.size - n - 1) {
       System.arraycopy(currentResult, 0, bestResult, 0, currentResult.size)
       System.arraycopy(currentOthers, 0, bestOthers, 0, currentOthers.size)
       bestFace = card.face
     }
+    index++
   }
   if (bestFace == null) {
     return null
