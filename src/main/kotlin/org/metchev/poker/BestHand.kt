@@ -82,12 +82,20 @@ private fun highestAnyPair(cards: List<Card>): Array<Card> =
       .toTypedArray(),
     2)
 
-private fun hasAnyPair(cards: List<Card>): Boolean =
-  cards
-    .asSequence()
-    .groupByTo(EnumMap(Face::class.java)) { it.face }
-    .filter { it.value.size >= 2 }
-    .isNotEmpty()
+private fun hasAnyPair(cards: List<Card>): Boolean {
+  for (card in cards) {
+    var i = 0
+    for (innerCard in cards) {
+      if (innerCard.face == card.face) {
+        i++
+        if (i == 2) {
+          return true
+        }
+      }
+    }
+  }
+  return false
+}
 
 private fun nOfAKindComparer(n: Int): (Array<Card>, Array<Card>) -> HandResult =
   { player1Cards: Array<Card>, player2Cards: Array<Card> ->
@@ -198,7 +206,7 @@ fun twoPairFinder(cards: Array<out Card>): Pair<Array<Card>, Array<Card>> {
         i++
       }
     }
-    if(i == 2) {
+    if (i == 2) {
       if (face1 == null) {
         face1 = card.face
       } else {
@@ -209,7 +217,7 @@ fun twoPairFinder(cards: Array<out Card>): Pair<Array<Card>, Array<Card>> {
   }
   for (card in cards) {
     if (card.face != face1 && card.face != face2) {
-      return Pair(twoPairs, Array(1) {card})
+      return Pair(twoPairs, Array(1) { card })
     }
   }
   throw RuntimeException("Shouldn't happen")
