@@ -2,7 +2,7 @@ package org.metchev.poker
 
 @ExperimentalUnsignedTypes
 fun nTuples(n: UInt, cards: List<Card>): Sequence<Array<Card>> {
-  val myCards = ArrayList<Card>(cards)
+  val myCards = cards.toTypedArray()
   val vars: Array<Int> = Array(n.toInt()) { it }
   val result: Array<Card> = Array(n.toInt()) { myCards[vars[it]] }
   return generateSequence {
