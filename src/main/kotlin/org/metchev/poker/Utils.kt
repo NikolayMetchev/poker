@@ -4,11 +4,16 @@ package org.metchev.poker
 fun nTuples(n: UInt, cards: List<Card>): Sequence<Array<Card>> {
   val myCards = ArrayList<Card>(cards)
   val vars: Array<Int> = Array(n.toInt()) { it }
+  val result: Array<Card> = Array(n.toInt()) { myCards[vars[it]] }
   return generateSequence {
     if (vars[0] > cards.size - n.toInt()) {
       return@generateSequence null
     }
-    val result : Array<Card> = Array(n.toInt()) {myCards[vars[it]]}
+    var i = 0
+    while (i < n.toInt()) {
+      result[i] = myCards[vars[i]]
+      i++
+    }
     increment(vars, (n - 1u).toInt(), n, cards.size)
     result
   }
