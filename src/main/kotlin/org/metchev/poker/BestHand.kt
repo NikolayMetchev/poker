@@ -215,12 +215,13 @@ enum class HandType(
     }
   }),
 
-  FLUSH({
-    asSequence()
-      .groupByTo(EnumMap(Suit::class.java)) { it.suit }
-      .map { it.value }
-      .map { it.size }
-      .any { it >= 5 }
+  FLUSH(checker@{
+    for (card in this) {
+      if (this.count { it.suit == card.suit } >= 5) {
+        return@checker true
+      }
+    }
+    false
   }, {
     highestCards(asSequence()
       .groupByTo(EnumMap(Suit::class.java)) { it.suit }
