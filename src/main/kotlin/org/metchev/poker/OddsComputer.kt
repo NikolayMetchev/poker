@@ -16,8 +16,34 @@ fun computeOdds(player1Hand: Hand, player2Hand: Hand): Map<HandResult, Int> {
   deck.remove(player1Hand.cards)
   deck.remove(player2Hand.cards)
   val nTuples = deck.nTuples(5u)
+  val player1Array = Array(7) {
+    when (it % 2) {
+      0 -> player1Hand.cards.component1()
+      1 -> player1Hand.cards.component2()
+      else -> throw RuntimeException("This shouldn't happen")
+    }
+  }
+  val player2Array = Array(7) {
+    when (it % 2) {
+      0 -> player2Hand.cards.component1()
+      1 -> player2Hand.cards.component2()
+      else -> throw RuntimeException("This shouldn't happen")
+    }
+  }
+
   return nTuples
-    .map { computeWinner(player1Hand, player2Hand, CommunityCards(it)) }
+    .map {
+      var i = 0
+      while (i < 5) {
+        player1Array[i+2] = it[i]
+        player2Array[i+2] = it[i]
+        i++
+      }
+      player1Array[0] = player1Hand.cards.component1()
+      player1Array[1] = player1Hand.cards.component2()
+      player2Array[0] = player2Hand.cards.component1()
+      player2Array[1] = player2Hand.cards.component2()
+      computeWinner(player1Array, player2Array) }
     .groupingBy { it.first }
     .eachCountTo(TreeMap())
 }

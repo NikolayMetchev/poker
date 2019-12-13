@@ -316,8 +316,25 @@ fun computeWinner(
   communityCards: CommunityCards
 ): Triple<HandResult, Pair<HandType, Array<Card>>, Pair<HandType, Array<Card>>> {
   val player1Pair = computeHandType(player1, communityCards)
-  val (player1HandType, player1Cards) = player1Pair
   val player2Pair = computeHandType(player2, communityCards)
+  return computeWinner(player1Pair, player2Pair)
+}
+
+fun computeWinner(
+  player1: Array<Card>,
+  player2: Array<Card>
+): Triple<HandResult, Pair<HandType, Array<Card>>, Pair<HandType, Array<Card>>> {
+  val player1Pair = computeHandType(player1)
+  val player2Pair = computeHandType(player2)
+  return computeWinner(player1Pair, player2Pair)
+}
+
+
+private fun computeWinner(
+  player1Pair: Pair<HandType, Array<Card>>,
+  player2Pair: Pair<HandType, Array<Card>>
+): Triple<HandResult, Pair<HandType, Array<Card>>, Pair<HandType, Array<Card>>> {
+  val (player1HandType, player1Cards) = player1Pair
   val (player2HandType, player2Cards) = player2Pair
   val compareTo = player1HandType.compareTo(player2HandType)
   val resultType = when {
