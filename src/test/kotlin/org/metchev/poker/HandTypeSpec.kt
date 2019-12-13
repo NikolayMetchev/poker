@@ -48,7 +48,7 @@ class HandTypeSpec : Spek({
       )
     }
 
-    it("1 Kicker Plays in 4 of a kind") {
+    it("1 Kicker Plays in 4 of a kind", timeout= 0L) {
       assertWinner(
         `5_OF_SPADES`, `6_OF_CLUBS`,
 

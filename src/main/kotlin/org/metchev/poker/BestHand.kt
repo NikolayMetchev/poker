@@ -25,13 +25,16 @@ private fun nOfAKindFinder(n: Int): Array<out Card>.() -> Array<Card> = {
 
 private fun nOfAKindFinder(cards: Array<out Card>, n: Int): Pair<Array<Card>, Array<Card>> {
   val bestResult: Array<Card> = Array(n) { Card.`2_OF_HEARTS` }
+  val bestOthers: Array<Card> = Array(cards.size - n) { Card.`2_OF_HEARTS` }
   var bestFace: Face? = null
   val currentResult = Array(n) { Card.`2_OF_HEARTS` }
+  val currentOthers = Array(cards.size - n) { Card.`2_OF_HEARTS` }
   for (card in cards) {
     if (bestFace != null && bestFace > card.face) {
       continue
     }
     var i = -1
+    var j = -1
     for (innerCard in cards) {
       if (innerCard.face == card.face) {
         if (++i >= n) {
@@ -39,15 +42,22 @@ private fun nOfAKindFinder(cards: Array<out Card>, n: Int): Pair<Array<Card>, Ar
         } else {
           currentResult[i] = innerCard
         }
+      } else {
+        if (++j >= cards.size - n) {
+          break
+        } else {
+          currentOthers[j] = innerCard
+        }
       }
     }
-    if (i == n - 1) {
+    if (i == n - 1 && j == cards.size - n - 1) {
       System.arraycopy(currentResult, 0, bestResult, 0, currentResult.size)
+      System.arraycopy(currentOthers, 0, bestOthers, 0, currentOthers.size)
       bestFace = card.face
     }
   }
 
-  val kickers = highestCards((cards.toList() - bestResult).toTypedArray(), 5 - n)
+  val kickers = highestCards(bestOthers, 5 - n)
 
   return Pair(bestResult, kickers)
 }
