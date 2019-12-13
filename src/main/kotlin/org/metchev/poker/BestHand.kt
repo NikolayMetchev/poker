@@ -142,7 +142,7 @@ private fun findStraight(cards: Array<out Card>, next: (Card) -> Card?): Array<C
   for (card in cards) {
     var previousCard = card
     var i = 0
-    var nextCard : Card? = next(previousCard)
+    var nextCard: Card? = next(previousCard)
     while (nextCard != null) {
       result[i] = previousCard
       if (i >= 3) {
@@ -161,7 +161,7 @@ private fun checkStraight(cards: Array<out Card>, next: (Card) -> Card?): Boolea
   cards.forEach {
     var i = 0
     var previousCard = it
-    var nextCard : Card? = next(previousCard)
+    var nextCard: Card? = next(previousCard)
     while (nextCard != null) {
       // Make sure we don't loop round e.g. 2, A, K, Q, J
       if (++i >= 4 && previousCard.face.ordinal <= Face.JACK.ordinal) {
@@ -229,15 +229,21 @@ enum class HandType(
       }
     }
     false
-  }, {
-    highestCards(asSequence()
-      .groupByTo(EnumMap(Suit::class.java)) { it.suit }
-      .filter { it.value.size >= 5 }
-      .iterator()
-      .next()
-      .value
-      .toTypedArray(),
-      5)
+  }, getter@{
+    this.sortByDescending { it.face }
+    val result = Array(5) { this[it] }
+    for (card in this) {
+      var i = 0
+      for (innerCard in this) {
+        if (innerCard.suit == card.suit) {
+          result[i++] = innerCard
+          if (i == 5) {
+            return@getter result
+          }
+        }
+      }
+    }
+    throw RuntimeException("This shouldn't happen")
   }, ::highestFaceComparer),
 
   STRAIGHT(
