@@ -133,35 +133,42 @@ private fun highestFaceComparer(
 
 private fun highestCards(cards: Array<out Card>, n: Int = 5): Array<Card> {
   cards.sortByDescending { it.face }
-  return Array(n) {cards[it]}
+  return Array(n) { cards[it] }
 }
 
-private fun findStraight(cards: Array<out Card>, next: (Card) -> Card, hasNext: (Card) -> Boolean): Array<Card> {
-  cards.sortedByDescending { it.face }.asSequence().forEach {
-    var previousCard = it
-    val result = mutableListOf<Card>()
-    while (hasNext(previousCard)) {
-      result.add(previousCard)
-      if (result.size >= 4) {
-        result.add(next(previousCard))
-        return result.toTypedArray()
+private fun findStraight(cards: Array<out Card>, next: (Card) -> Card?): Array<Card> {
+  cards.sortByDescending { it.face }
+  val result = Array(5) { cards[it] }
+  for (card in cards) {
+    var previousCard = card
+    var i = 0
+    var nextCard : Card? = next(previousCard)
+    while (nextCard != null) {
+      result[i] = previousCard
+      if (i >= 3) {
+        result[i + 1] = nextCard
+        return result
       }
-      previousCard = next(previousCard)
+      previousCard = nextCard
+      nextCard = next(previousCard)
+      i++
     }
   }
   throw RuntimeException("This shouldn't happen")
 }
 
-private fun checkStraight(cards: Array<out Card>, next: (Card) -> Card, hasNext: (Card) -> Boolean): Boolean {
+private fun checkStraight(cards: Array<out Card>, next: (Card) -> Card?): Boolean {
   cards.forEach {
     var i = 0
     var previousCard = it
-    while (hasNext(previousCard)) {
+    var nextCard : Card? = next(previousCard)
+    while (nextCard != null) {
       // Make sure we don't loop round e.g. 2, A, K, Q, J
       if (++i >= 4 && previousCard.face.ordinal <= Face.JACK.ordinal) {
         return true
       }
-      previousCard = next(previousCard)
+      previousCard = nextCard
+      nextCard = next(previousCard)
     }
   }
   return false
@@ -185,17 +192,17 @@ enum class HandType(
 
   STRAIGHT_FLUSH(
     {
-      checkStraight(
-        this,
-        { it.previousByFace() },
-        { it.previousByFace() in this })
+      checkStraight(this) {
+        val previous = it.previousByFace()
+        if (previous in this) previous else null
+      }
     }
     ,
     {
-      findStraight(
-        this,
-        { it.previousByFace() },
-        { it.previousByFace() in this })
+      findStraight(this) {
+        val previous = it.previousByFace()
+        if (previous in this) previous else null
+      }
     },
     ::straightFaceComparer
   ),
@@ -235,43 +242,23 @@ enum class HandType(
 
   STRAIGHT(
     {
-      checkStraight(
-        this,
-        next@{
-          for (card in this) {
-            if (card.face == it.face.previous()) {
-              return@next card
-            }
+      checkStraight(this) next@{
+        for (card in this) {
+          if (card.face == it.face.previous()) {
+            return@next card
           }
-          throw RuntimeException("This shouldn't happen")
-        },
-        hasNext@{
-          for (card in this) {
-            if (card.face == it.face.previous()) {
-              return@hasNext true
-            }
-          }
-          false
-        })
+        }
+        null
+      }
     }, {
-      findStraight(
-        this,
-        next@{
-          for (card in this) {
-            if (card.face == it.face.previous()) {
-              return@next card
-            }
+      findStraight(this) next@{
+        for (card in this) {
+          if (card.face == it.face.previous()) {
+            return@next card
           }
-          throw RuntimeException("This shouldn't happen")
-        },
-        hasNext@{
-          for (card in this) {
-            if (card.face == it.face.previous()) {
-              return@hasNext true
-            }
-          }
-          false
-        })
+        }
+        null
+      }
     },
     ::straightFaceComparer
   ),
