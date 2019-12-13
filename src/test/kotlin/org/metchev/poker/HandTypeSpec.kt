@@ -6,8 +6,6 @@ import org.metchev.poker.HandType.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 @ExperimentalUnsignedTypes
 class HandTypeSpec : Spek({
@@ -48,7 +46,7 @@ class HandTypeSpec : Spek({
       )
     }
 
-    it("1 Kicker Plays in 4 of a kind", timeout= 0L) {
+    it("1 Kicker Plays in 4 of a kind", timeout = 0L) {
       assertWinner(
         `5_OF_SPADES`, `6_OF_CLUBS`,
 
@@ -83,7 +81,7 @@ class HandTypeSpec : Spek({
       )
     }
 
-    it("2 Kickers Play in one pair") {
+    it("2 Kickers Play in one pair", timeout = 0L) {
       assertWinner(
         ACE_OF_CLUBS, `10_OF_CLUBS`,
 
@@ -493,90 +491,110 @@ class HandTypeSpec : Spek({
   describe("HandType") {
     context("init") {
       it("Should be a Wheel straight") {
-        assertTrue(
-          STRAIGHT.check(arrayOf(
-            ACE_OF_HEARTS,
-            `2_OF_HEARTS`,
-            `3_OF_HEARTS`,
-            `4_OF_HEARTS`,
-            `5_OF_HEARTS`)
-          )
+        var cards = arrayOf(
+          ACE_OF_HEARTS,
+          `2_OF_HEARTS`,
+          `3_OF_HEARTS`,
+          `4_OF_HEARTS`,
+          `5_OF_HEARTS`
         )
-        assertTrue(
-          STRAIGHT.check(arrayOf(
-            ACE_OF_DIAMONDS,
-            `2_OF_HEARTS`,
-            `3_OF_HEARTS`,
-            `4_OF_CLUBS`,
-            `5_OF_HEARTS`)
-          )
+        testGetCards(
+          STRAIGHT,
+          cards,
+          cards
         )
-        assertTrue(
-          STRAIGHT_FLUSH.check(arrayOf(
-            ACE_OF_HEARTS,
-            `2_OF_HEARTS`,
-            `3_OF_HEARTS`,
-            `4_OF_HEARTS`,
-            `5_OF_HEARTS`)
-          )
+        cards = arrayOf(
+          ACE_OF_DIAMONDS,
+          `2_OF_HEARTS`,
+          `3_OF_HEARTS`,
+          `4_OF_CLUBS`,
+          `5_OF_HEARTS`
         )
-
+        testGetCards(
+          STRAIGHT,
+          cards,
+          cards
+        )
+        cards = arrayOf(
+          ACE_OF_HEARTS,
+          `2_OF_HEARTS`,
+          `3_OF_HEARTS`,
+          `4_OF_HEARTS`,
+          `5_OF_HEARTS`
+        )
+        testGetCards(
+          STRAIGHT_FLUSH,
+          cards,
+          cards
+        )
       }
 
       it("Not Straights") {
-        assertFalse(
-          STRAIGHT.check(arrayOf(
+        testGetCards(
+          STRAIGHT,
+          arrayOf(
             ACE_OF_HEARTS,
             KING_OF_HEARTS,
             QUEEN_OF_HEARTS,
             JACK_OF_HEARTS,
-            `2_OF_DIAMONDS`)
-          )
+            `2_OF_DIAMONDS`
+          ),
+          null
         )
-        assertFalse(
-          STRAIGHT.check(arrayOf(
+        testGetCards(
+          STRAIGHT,
+          arrayOf(
             ACE_OF_HEARTS,
             KING_OF_HEARTS,
             QUEEN_OF_HEARTS,
             `3_OF_HEARTS`,
-            `2_OF_DIAMONDS`)
-          )
+            `2_OF_DIAMONDS`
+          ),
+          null
         )
-        assertFalse(
-          STRAIGHT.check(arrayOf(
+        testGetCards(
+          STRAIGHT,
+          arrayOf(
             ACE_OF_HEARTS,
             KING_OF_HEARTS,
             `4_OF_HEARTS`,
             `3_OF_HEARTS`,
-            `2_OF_DIAMONDS`)
-          )
+            `2_OF_DIAMONDS`
+          ),
+          null
         )
-        assertFalse(
-          STRAIGHT_FLUSH.check(arrayOf(
+        testGetCards(
+          STRAIGHT_FLUSH,
+          arrayOf(
             ACE_OF_HEARTS,
             KING_OF_HEARTS,
             `4_OF_HEARTS`,
             `3_OF_HEARTS`,
-            `2_OF_HEARTS`)
-          )
+            `2_OF_HEARTS`
+          ),
+          null
         )
-        assertFalse(
-          STRAIGHT_FLUSH.check(arrayOf(
+        testGetCards(
+          STRAIGHT_FLUSH,
+          arrayOf(
             ACE_OF_HEARTS,
             KING_OF_HEARTS,
             QUEEN_OF_HEARTS,
             JACK_OF_HEARTS,
-            `2_OF_HEARTS`)
-          )
+            `2_OF_HEARTS`
+          ),
+          null
         )
-        assertFalse(
-          STRAIGHT_FLUSH.check(arrayOf(
+        testGetCards(
+          STRAIGHT_FLUSH,
+          arrayOf(
             ACE_OF_HEARTS,
             KING_OF_HEARTS,
             QUEEN_OF_HEARTS,
             `3_OF_HEARTS`,
-            `2_OF_HEARTS`)
-          )
+            `2_OF_HEARTS`
+          ),
+          null
         )
       }
 
@@ -593,41 +611,61 @@ class HandTypeSpec : Spek({
               `6_OF_SPADES`,
               `10_OF_HEARTS`
             )
-          ).sortedBy { it.face }
+          )?.sortedBy { it.face }
         )
       }
       it("Find Straight Flush") {
-        assertTrue(
-          STRAIGHT_FLUSH.check(arrayOf(
-            ACE_OF_HEARTS,
-            KING_OF_HEARTS,
-            QUEEN_OF_HEARTS,
-            JACK_OF_HEARTS,
-            `10_OF_HEARTS`)
-          )
+        val cards = arrayOf(
+          ACE_OF_HEARTS,
+          KING_OF_HEARTS,
+          QUEEN_OF_HEARTS,
+          JACK_OF_HEARTS,
+          `10_OF_HEARTS`
         )
-        assertFalse(
-          STRAIGHT_FLUSH.check(arrayOf(
+        testGetCards(
+          STRAIGHT_FLUSH,
+          cards,
+          cards
+        )
+        testGetCards(
+          STRAIGHT_FLUSH,
+          arrayOf(
             ACE_OF_CLUBS,
             KING_OF_HEARTS,
             QUEEN_OF_HEARTS,
             JACK_OF_HEARTS,
-            `10_OF_HEARTS`)
-          )
+            `10_OF_HEARTS`
+          ),
+          null
         )
-        assertFalse(
-          STRAIGHT_FLUSH.check(arrayOf(
+        testGetCards(
+          STRAIGHT_FLUSH,
+          arrayOf(
             ACE_OF_HEARTS,
             KING_OF_HEARTS,
             QUEEN_OF_HEARTS,
             JACK_OF_HEARTS,
-            `9_OF_HEARTS`)
-          )
+            `9_OF_HEARTS`
+          ),
+          null
         )
       }
     }
   }
 })
+
+private fun testGetCards(
+  handType: HandType,
+  cards: Array<Card>,
+  expectedCards: Array<Card>?
+) {
+  assertEquals(
+    expectedCards?.toSortedSet(),
+    handType.getCards(
+      cards
+    )?.toSortedSet()
+  )
+}
 
 private fun assertWinner(
   player1Card1: Card,

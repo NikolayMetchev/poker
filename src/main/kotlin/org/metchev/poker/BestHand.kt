@@ -18,12 +18,13 @@ private fun nOfAKindChecker(n: Int): Array<out Card>.() -> Boolean = checker@{
   false
 }
 
-private fun nOfAKindFinder(n: Int): Array<out Card>.() -> Array<Card> = {
+private fun nOfAKindFinder(n: Int): Array<out Card>.() -> Array<Card>? = {
   val pair = nOfAKindFinder(this, n)
-  pair.first + pair.second
+
+  pair?.first?.plus(pair.second)
 }
 
-private fun nOfAKindFinder(cards: Array<out Card>, n: Int): Pair<Array<Card>, Array<Card>> {
+private fun nOfAKindFinder(cards: Array<out Card>, n: Int): Pair<Array<Card>, Array<Card>>? {
   val bestResult: Array<Card> = Array(n) { Card.`2_OF_HEARTS` }
   val bestOthers: Array<Card> = Array(cards.size - n) { Card.`2_OF_HEARTS` }
   var bestFace: Face? = null
@@ -56,23 +57,33 @@ private fun nOfAKindFinder(cards: Array<out Card>, n: Int): Pair<Array<Card>, Ar
       bestFace = card.face
     }
   }
+  if (bestFace == null) {
+    return null
+  }
 
   val kickers = highestCards(bestOthers, 5 - n)
 
   return Pair(bestResult, kickers)
 }
 
-private fun highestAnyPair(cards: List<Card>): Array<Card> =
-  highestCards(
-    cards
-      .asSequence()
-      .groupByTo(TreeMap(compareByDescending { it })) { it.face }
-      .filter { it.value.size >= 2 }
-      .iterator()
-      .next()
-      .value
-      .toTypedArray(),
-    2)
+private fun highestAnyPair(cards: List<Card>): Array<Card>? {
+  val iterator = cards
+    .asSequence()
+    .groupByTo(TreeMap(compareByDescending { it })) { it.face }
+    .filter { it.value.size >= 2 }
+    .iterator()
+  if (iterator.hasNext()) {
+    return highestCards(
+      iterator
+        .next()
+        .value
+        .toTypedArray(),
+      2
+    )
+  } else {
+    return null
+  }
+}
 
 private fun hasAnyPair(cards: List<Card>): Boolean =
   cards
@@ -83,8 +94,8 @@ private fun hasAnyPair(cards: List<Card>): Boolean =
 
 private fun nOfAKindComparer(n: Int): (Array<Card>, Array<Card>) -> HandResult =
   { player1Cards: Array<Card>, player2Cards: Array<Card> ->
-    val (nOfAKindPlayer1Cards, kickers1) = nOfAKindFinder(player1Cards, n)
-    val (nOfAKindPlayer2Cards, kickers2) = nOfAKindFinder(player2Cards, n)
+    val (nOfAKindPlayer1Cards, kickers1) = nOfAKindFinder(player1Cards, n)!!
+    val (nOfAKindPlayer2Cards, kickers2) = nOfAKindFinder(player2Cards, n)!!
     highestFaceComparer(nOfAKindPlayer1Cards, nOfAKindPlayer2Cards) {
       highestFaceComparer(kickers1, kickers2)
     }
@@ -126,23 +137,26 @@ private fun highestFaceComparer(
 
 private fun highestCards(cards: Array<out Card>, n: Int = 5): Array<Card> {
   cards.sortByDescending { it.face }
-  return Array(n) {cards[it]}
+  return Array(n) { cards[it] }
 }
 
-private fun findStraight(cards: Array<out Card>, next: (Card) -> Card, hasNext: (Card) -> Boolean): Array<Card> {
+private fun findStraight(cards: Array<out Card>, next: (Card) -> Card, hasNext: (Card) -> Boolean): Array<Card>? {
   cards.sortedByDescending { it.face }.asSequence().forEach {
     var previousCard = it
-    val result = mutableListOf<Card>()
+    val result = ArrayList<Card>()
     while (hasNext(previousCard)) {
       result.add(previousCard)
-      if (result.size >= 4) {
+      if (result.size == 5) {
+        result.removeAt(0)
+      }
+      if (result.size >= 4 && previousCard.face.ordinal <= Face.JACK.ordinal) {
         result.add(next(previousCard))
         return result.toTypedArray()
       }
       previousCard = next(previousCard)
     }
   }
-  throw RuntimeException("This shouldn't happen")
+  return null
 }
 
 private fun checkStraight(cards: Array<out Card>, next: (Card) -> Card, hasNext: (Card) -> Boolean): Boolean {
@@ -160,30 +174,39 @@ private fun checkStraight(cards: Array<out Card>, next: (Card) -> Card, hasNext:
   return false
 }
 
-fun twoPairFinder(cards: Array<out Card>): Pair<Array<Card>, Array<Card>> {
+fun twoPairFinder(cards: Array<out Card>): Pair<Array<Card>, Array<Card>>? {
   val iterator = cards.asSequence()
     .groupByTo(TreeMap(compareByDescending { it })) { it.face }
     .filterValues { it.size == 2 }
     .iterator()
-  val twoPairs = iterator.next().value.toTypedArray() + iterator.next().value.toTypedArray()
-  val kickers = highestCards((cards.toList() - twoPairs).toTypedArray(), 1)
-  return Pair(twoPairs, kickers)
+  if (iterator.hasNext()) {
+    val firstPair: Array<Card> = iterator.next().value.toTypedArray()
+
+    if (iterator.hasNext()) {
+      val secondPair: Array<Card> = iterator.next().value.toTypedArray()
+
+      val twoPairs = firstPair + secondPair
+      val kickers = highestCards((cards.toList() - twoPairs).toTypedArray(), 1)
+      return Pair(twoPairs, kickers)
+    }
+  }
+  return null
 }
 
 enum class HandType(
-  private val checker: Array<out Card>.() -> Boolean,
-  private val getter: Array<out Card>.() -> Array<Card>,
+//  private val checker: Array<out Card>.() -> Boolean,
+  private val getter: Array<out Card>.() -> Array<Card>?,
   private val comparer: (Array<Card>, Array<Card>) -> HandResult
 ) {
 
   STRAIGHT_FLUSH(
-    {
-      checkStraight(
-        this,
-        { it.previousByFace() },
-        { it.previousByFace() in this })
-    }
-    ,
+//    {
+//      checkStraight(
+//        this,
+//        { it.previousByFace() },
+//        { it.previousByFace() in this })
+//    }
+//    ,
     {
       findStraight(
         this,
@@ -193,59 +216,82 @@ enum class HandType(
     ::straightFaceComparer
   ),
 
-  FOUR_OF_A_KIND(nOfAKindChecker(4), nOfAKindFinder(4), nOfAKindComparer(4)),
+  FOUR_OF_A_KIND(
+//    nOfAKindChecker(4),
+    nOfAKindFinder(4), nOfAKindComparer(4)
+  ),
 
-  FULL_HOUSE({
-    THREE_OF_A_KIND.check(this) && hasAnyPair(this.toList() - nOfAKindFinder(this, 3).first)
-  }, {
-    nOfAKindFinder(this, 3).first + highestAnyPair(this.toList() - nOfAKindFinder(this, 3).first)
-  }, { player1Cards, player2Cards ->
-    highestFaceComparer(nOfAKindFinder(player1Cards, 3).first, nOfAKindFinder(player2Cards, 3).first) {
-      highestFaceComparer(
-        nOfAKindFinder(player1Cards, 2).first,
-        nOfAKindFinder(player2Cards, 2).first
-      )
-    }
-  }),
+  FULL_HOUSE(
+//    {
+//    THREE_OF_A_KIND.check(this) && hasAnyPair(this.toList() - nOfAKindFinder(this, 3).first)
+//  },
+    getCards@{
+      val nOfAKindFinder = nOfAKindFinder(this, 3)
+      if(nOfAKindFinder != null) {
+        val highestAnyPair = highestAnyPair(this.toList() - nOfAKindFinder.first)
+        if (highestAnyPair != null) {
+          return@getCards nOfAKindFinder.first + highestAnyPair
+        }
+      }
+      null
+    }, { player1Cards, player2Cards ->
+      highestFaceComparer(nOfAKindFinder(player1Cards, 3)!!.first, nOfAKindFinder(player2Cards, 3)!!.first) {
+        highestFaceComparer(
+          nOfAKindFinder(player1Cards, 2)!!.first,
+          nOfAKindFinder(player2Cards, 2)!!.first
+        )
+      }
+    }),
 
-  FLUSH({
-    asSequence()
-      .groupByTo(EnumMap(Suit::class.java)) { it.suit }
-      .map { it.value }
-      .map { it.size }
-      .any { it >= 5 }
-  }, {
-    highestCards(asSequence()
-      .groupByTo(EnumMap(Suit::class.java)) { it.suit }
-      .filter { it.value.size >= 5 }
-      .iterator()
-      .next()
-      .value
-      .toTypedArray(),
-      5)
-  }, ::highestFaceComparer),
+  FLUSH(
+//    {
+//    asSequence()
+//      .groupByTo(EnumMap(Suit::class.java)) { it.suit }
+//      .map { it.value }
+//      .map { it.size }
+//      .any { it >= 5 }
+//  },
+    {
+      val iterator = asSequence()
+        .groupByTo(EnumMap(Suit::class.java)) { it.suit }
+        .filter { it.value.size >= 5 }
+        .iterator()
+      if (iterator.hasNext()) {
+        highestCards(
+          iterator
+            .next()
+            .value
+            .toTypedArray(),
+          5
+        )
+      } else {
+        null
+      }
+    }, ::highestFaceComparer
+  ),
 
   STRAIGHT(
+//    {
+//      checkStraight(
+//        this,
+//        next@{
+//          for (card in this) {
+//            if (card.face == it.face.previous()) {
+//              return@next card
+//            }
+//          }
+//          throw RuntimeException("This shouldn't happen")
+//        },
+//        hasNext@{
+//          for (card in this) {
+//            if (card.face == it.face.previous()) {
+//              return@hasNext true
+//            }
+//          }
+//          false
+//        })
+//    },
     {
-      checkStraight(
-        this,
-        next@{
-          for (card in this) {
-            if (card.face == it.face.previous()) {
-              return@next card
-            }
-          }
-          throw RuntimeException("This shouldn't happen")
-        },
-        hasNext@{
-          for (card in this) {
-            if (card.face == it.face.previous()) {
-              return@hasNext true
-            }
-          }
-          false
-        })
-    }, {
       findStraight(
         this,
         next@{
@@ -267,32 +313,47 @@ enum class HandType(
     },
     ::straightFaceComparer
   ),
-  THREE_OF_A_KIND(nOfAKindChecker(3), nOfAKindFinder(3), nOfAKindComparer(3)),
-  TWO_PAIR({
-    asSequence()
-      .groupByTo(EnumMap(Face::class.java)) { it.face }
-      .values
-      .asSequence()
-      .map { it.size }
-      .groupByTo(HashMap()) { it }[2]
-      ?.size ?: 0 >= 2
-  }, {
-    val (twoPairCards, kickers) = twoPairFinder(this)
-    twoPairCards + kickers
-  }, { player1Cards, player2Cards ->
-    val (twoPairPlayer1Cards, player1Kickers) = twoPairFinder(player1Cards)
-    val (twoPairPlayer2Cards, player2Kickers) = twoPairFinder(player2Cards)
-    highestFaceComparer(twoPairPlayer1Cards, twoPairPlayer2Cards) {
-      highestFaceComparer(player1Kickers, player2Kickers)
-    }
-  }),
-  ONE_PAIR(nOfAKindChecker(2), nOfAKindFinder(2), nOfAKindComparer(2)),
-  HIGH_CARD({ true }, { highestCards(this, 5) }, ::highestFaceComparer);
+  THREE_OF_A_KIND(
+//    nOfAKindChecker(3),
+    nOfAKindFinder(3), nOfAKindComparer(3)
+  ),
+  TWO_PAIR(
+//    {
+//    asSequence()
+//      .groupByTo(EnumMap(Face::class.java)) { it.face }
+//      .values
+//      .asSequence()
+//      .map { it.size }
+//      .groupByTo(HashMap()) { it }[2]
+//      ?.size ?: 0 >= 2
+//  },
+    getCards@{
+      val pair = twoPairFinder(this)
+      if (pair != null) {
+        val (twoPairCards, kickers) = pair
+        return@getCards twoPairCards + kickers
+      }
+      null
+    }, { player1Cards, player2Cards ->
+      val (twoPairPlayer1Cards, player1Kickers) = twoPairFinder(player1Cards)!!
+      val (twoPairPlayer2Cards, player2Kickers) = twoPairFinder(player2Cards)!!
+      highestFaceComparer(twoPairPlayer1Cards, twoPairPlayer2Cards) {
+        highestFaceComparer(player1Kickers, player2Kickers)
+      }
+    }),
+  ONE_PAIR(
+//    nOfAKindChecker(2),
+    nOfAKindFinder(2), nOfAKindComparer(2)
+  ),
+  HIGH_CARD(
+//    { true },
+    { highestCards(this, 5) }, ::highestFaceComparer
+  );
 
   //fun check(cards: Array<Card>) = checker(cards)
-  fun check(cards: Array<out Card>) = checker(cards)
+//  fun check(cards: Array<out Card>) = checker(cards)
 
-  fun getCards(cards: Array<Card>): Array<Card> = getter(cards)
+  fun getCards(cards: Array<Card>): Array<Card>? = getter(cards)
   fun compareCards(player1Cards: Array<Card>, player2Cards: Array<Card>): HandResult =
     comparer(player1Cards, player2Cards)
 }
@@ -302,11 +363,12 @@ fun computeHandType(hand: Hand, communityCards: CommunityCards) =
 
 fun computeHandType(cards: Array<Card>): Pair<HandType, Array<Card>> {
   HandType.values().forEach {
-    if (it.check(cards)) {
-      return Pair(it, it.getCards(cards))
+    val handTypeCards = it.getCards(cards)
+    if (handTypeCards != null) {
+      return Pair(it, handTypeCards)
     }
   }
-  throw RuntimeException("This shouldn't Happen. High Card should always return true. Check your code")
+  throw RuntimeException("This shouldn't Happen. High Card should always return something. Check your code")
 }
 
 fun computeWinner(
