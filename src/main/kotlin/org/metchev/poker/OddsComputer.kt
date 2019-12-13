@@ -43,6 +43,8 @@ fun computeOdds(player1Hand: Hand, player2Hand: Hand): Map<HandResult, Int> {
       player1Array[1] = player1Hand.cards.component2()
       player2Array[0] = player2Hand.cards.component1()
       player2Array[1] = player2Hand.cards.component2()
+      player1Array.sortByDescending { it.face }
+      player2Array.sortByDescending { it.face }
       computeWinner(player1Array, player2Array) }
     .groupingBy { it.first }
     .eachCountTo(TreeMap())

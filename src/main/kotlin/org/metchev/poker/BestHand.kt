@@ -112,8 +112,8 @@ private fun highestFaceComparer(
   player2Cards: Array<Card>,
   equalCase: () -> HandResult
 ): HandResult {
-  val player1Iterator = player1Cards.sortedByDescending { it.face }.iterator()
-  val player2Iterator = player2Cards.sortedByDescending { it.face }.iterator()
+  val player1Iterator = player1Cards.iterator()
+  val player2Iterator = player2Cards.iterator()
   while (player1Iterator.hasNext()) {
     val player1Card = player1Iterator.next()
     if (!player2Iterator.hasNext()) {
@@ -261,7 +261,6 @@ enum class HandType(
     }
     false
   }, getter@{
-    this.sortByDescending { it.face }
     val result = Array(5) { this[it] }
     for (card in this) {
       var i = 0
