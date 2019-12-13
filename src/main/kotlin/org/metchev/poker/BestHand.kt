@@ -1,5 +1,6 @@
 package org.metchev.poker
 
+import org.metchev.poker.Card.ACE_OF_HEARTS
 import org.metchev.poker.Face.ACE
 import java.util.*
 
@@ -175,13 +176,43 @@ private fun checkStraight(cards: Array<out Card>, next: (Card) -> Card?): Boolea
 }
 
 fun twoPairFinder(cards: Array<out Card>): Pair<Array<Card>, Array<Card>> {
-  val iterator = cards.asSequence()
-    .groupByTo(TreeMap(compareByDescending { it })) { it.face }
-    .filterValues { it.size == 2 }
-    .iterator()
-  val twoPairs = iterator.next().value.toTypedArray() + iterator.next().value.toTypedArray()
-  val kickers = highestCards((cards.toList() - twoPairs).toTypedArray(), 1)
-  return Pair(twoPairs, kickers)
+  cards.sortByDescending { it.face }
+  var face1: Face? = null
+  var face2: Face? = null
+  val twoPairs = Array(4) { ACE_OF_HEARTS }
+  for (card in cards) {
+    if (card.face == face1) {
+      continue
+    }
+    var i = 0
+    for (innerCard in cards) {
+      if (innerCard.face == card.face) {
+        if (i > 1) {
+          break
+        }
+        if (face1 == null) {
+          twoPairs[i] = innerCard
+        } else {
+          twoPairs[i + 2] = innerCard
+        }
+        i++
+      }
+    }
+    if(i == 2) {
+      if (face1 == null) {
+        face1 = card.face
+      } else {
+        face2 = card.face
+        break
+      }
+    }
+  }
+  for (card in cards) {
+    if (card.face != face1 && card.face != face2) {
+      return Pair(twoPairs, Array(1) {card})
+    }
+  }
+  throw RuntimeException("Shouldn't happen")
 }
 
 enum class HandType(
