@@ -79,7 +79,7 @@ enum class Card(val face: Face, val suit: Suit) {
   `2_OF_CLUBS`(`2`, `♣`);
 
   companion object {
-    private val map: Map<Pair<Face, Suit>, Card> = values().associateBy { Pair(it.face, it.suit) }
+    private val map: Map<Pair<Face, Suit>, Card> = values().associateByTo(HashMap()) { Pair(it.face, it.suit) }
     fun get(face: Face, suit: Suit): Card = map.getValue(Pair(face, suit))
   }
 }
