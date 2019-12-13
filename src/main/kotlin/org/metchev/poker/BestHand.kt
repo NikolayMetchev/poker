@@ -269,14 +269,26 @@ enum class HandType(
     ::straightFaceComparer
   ),
   THREE_OF_A_KIND(nOfAKindChecker(3), nOfAKindFinder(3), nOfAKindComparer(3)),
-  TWO_PAIR({
-    asSequence()
-      .groupByTo(EnumMap(Face::class.java)) { it.face }
-      .values
-      .asSequence()
-      .map { it.size }
-      .groupByTo(HashMap()) { it }[2]
-      ?.size ?: 0 >= 2
+  TWO_PAIR(getter@{
+    var face: Face? = null
+    for (card in this) {
+      if (card.face == face) {
+        continue
+      }
+      var count = 0
+      for (innerCard in this) {
+        if (innerCard.face == card.face) {
+          count++
+        }
+      }
+      if (count == 2) {
+        if (face != null) {
+          return@getter true
+        }
+        face = card.face
+      }
+    }
+    false
   }, {
     val (twoPairCards, kickers) = twoPairFinder(this)
     twoPairCards + kickers
