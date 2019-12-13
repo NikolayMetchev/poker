@@ -13,10 +13,14 @@ enum class Suit() {
 enum class Face {
   `2`, `3`, `4`, `5`, `6`, `7`, `8`, `9`, `10`, JACK, QUEEN, KING, ACE;
 
-  fun next() = values()[(ordinal + 1) % values().size]
+  companion object {
+    private val values = values()
+  }
+
+  fun next() = values[(ordinal + 1) % values.size]
   fun previous() = when (ordinal) {
-    0 -> values()[values().size - 1]
-    else -> values()[(ordinal - 1)]
+    0 -> values[values.size - 1]
+    else -> values[(ordinal - 1)]
   }
 }
 
@@ -81,7 +85,10 @@ enum class Card(val face: Face, val suit: Suit) {
   companion object {
     private val map: Map<Pair<Face, Suit>, Card> = values().associateByTo(HashMap()) { Pair(it.face, it.suit) }
     fun get(face: Face, suit: Suit): Card = map.getValue(Pair(face, suit))
+    private val previousByFace: Array<Card> = Array(values().size) { get(values()[it].face.previous(), values()[it].suit) }
   }
+
+  fun previousByFace() = previousByFace[ordinal]
 }
 
 class Deck() {

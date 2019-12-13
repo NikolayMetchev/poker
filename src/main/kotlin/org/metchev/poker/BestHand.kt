@@ -180,15 +180,15 @@ enum class HandType(
     {
       checkStraight(
         this,
-        { Card.get(it.face.previous(), it.suit) },
-        { Card.get(it.face.previous(), it.suit) in this })
+        { it.previousByFace() },
+        { it.previousByFace() in this })
     }
     ,
     {
       findStraight(
         this,
-        { Card.get(it.face.previous(), it.suit) },
-        { Card.get(it.face.previous(), it.suit) in this })
+        { it.previousByFace() },
+        { it.previousByFace() in this })
     },
     ::straightFaceComparer
   ),
@@ -227,17 +227,43 @@ enum class HandType(
 
   STRAIGHT(
     {
-      val byFace = groupByTo(EnumMap(Face::class.java)) { it.face }
       checkStraight(
         this,
-        { byFace.getValue(it.face.previous())[0] },
-        { it.face.previous() in byFace.keys })
+        next@{
+          for (card in this) {
+            if (card.face == it.face.previous()) {
+              return@next card
+            }
+          }
+          throw RuntimeException("This shouldn't happen")
+        },
+        hasNext@{
+          for (card in this) {
+            if (card.face == it.face.previous()) {
+              return@hasNext true
+            }
+          }
+          false
+        })
     }, {
-      val byFace = groupByTo(EnumMap(Face::class.java)) { it.face }
       findStraight(
         this,
-        { byFace.getValue(it.face.previous())[0] },
-        { it.face.previous() in byFace.keys })
+        next@{
+          for (card in this) {
+            if (card.face == it.face.previous()) {
+              return@next card
+            }
+          }
+          throw RuntimeException("This shouldn't happen")
+        },
+        hasNext@{
+          for (card in this) {
+            if (card.face == it.face.previous()) {
+              return@hasNext true
+            }
+          }
+          false
+        })
     },
     ::straightFaceComparer
   ),
