@@ -475,7 +475,7 @@ class HandTypeSpec : Spek({
   }
   describe("Best HandType") {
     it("Should be High Card") {
-      val (handType, _) = computeHandType(
+      val handType  = computeHandType(
         Hand(ACE_OF_CLUBS, `10_OF_CLUBS`),
         CommunityCards(
           `7_OF_SPADES`,
@@ -642,17 +642,10 @@ private fun assertWinner(
   player2Result: HandType
 ) {
   val result = computeWinner(
-    Hand(player1Card1, player1Card2),
-    Hand(player2Card1, player2Card2),
-    CommunityCards(
-      communityCard1,
-      communityCard2,
-      communityCard3,
-      communityCard4,
-      communityCard5
-    )
+    arrayOf(player1Card1, player1Card2, communityCard1,communityCard2,communityCard3,communityCard4, communityCard5).sortedByDescending { it.face }.toTypedArray(),
+    arrayOf(player2Card1, player2Card2, communityCard1,communityCard2,communityCard3,communityCard4, communityCard5).sortedByDescending { it.face }.toTypedArray()
   )
   assertEquals(handResult, result.first)
-  assertEquals(player1Result, result.second.first)
-  assertEquals(player2Result, result.third.first)
+  assertEquals(player1Result, result.second)
+  assertEquals(player2Result, result.third)
 }

@@ -50,17 +50,17 @@ fun computeOdds(player1Hand: Hand, player2Hand: Hand): Map<HandResult, Int> {
     .eachCountTo(TreeMap())
 }
 
-@ExperimentalUnsignedTypes
-suspend fun computeOddsAsync(player1Hand: Hand, player2Hand: Hand): Map<HandResult, Int> {
-  val deck = Deck()
-  deck.remove(player1Hand.cards)
-  deck.remove(player2Hand.cards)
-  val nTuples = deck.nTuples(5u)
-  return nTuples
-    .pmap { computeWinner(player1Hand, player2Hand, CommunityCards(it)) }
-    .groupingBy { it.first }
-    .eachCountTo(TreeMap())
-}
+//@ExperimentalUnsignedTypes
+//suspend fun computeOddsAsync(player1Hand: Hand, player2Hand: Hand): Map<HandResult, Int> {
+//  val deck = Deck()
+//  deck.remove(player1Hand.cards)
+//  deck.remove(player2Hand.cards)
+//  val nTuples = deck.nTuples(5u)
+//  return nTuples
+//    .pmap { computeWinner(player1Hand, player2Hand, CommunityCards(it)) }
+//    .groupingBy { it.first }
+//    .eachCountTo(TreeMap())
+//}
 
 @ExperimentalUnsignedTypes
 fun main() {

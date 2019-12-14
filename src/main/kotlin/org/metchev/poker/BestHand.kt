@@ -2,6 +2,8 @@ package org.metchev.poker
 
 import org.metchev.poker.Card.ACE_OF_HEARTS
 import org.metchev.poker.Face.ACE
+import org.metchev.poker.HandResult.PLAYER_1_WINS
+import org.metchev.poker.HandResult.PLAYER_2_WINS
 import java.util.*
 
 enum class HandResult {
@@ -110,17 +112,17 @@ private fun highestFaceComparer(
   while (player1Iterator.hasNext()) {
     val player1Card = player1Iterator.next()
     if (!player2Iterator.hasNext()) {
-      return HandResult.PLAYER_2_WINS
+      return PLAYER_2_WINS
     }
     val player2Card = player2Iterator.next()
     val compareTo = player1Card.face.compareTo(player2Card.face)
     when {
-      compareTo > 0 -> return HandResult.PLAYER_1_WINS
-      compareTo < 0 -> return HandResult.PLAYER_2_WINS
+      compareTo > 0 -> return PLAYER_1_WINS
+      compareTo < 0 -> return PLAYER_2_WINS
     }
   }
   if (player2Iterator.hasNext()) {
-    return HandResult.PLAYER_1_WINS
+    return PLAYER_1_WINS
   }
   return equalCase()
 }
@@ -365,32 +367,48 @@ enum class HandType(
 fun computeHandType(hand: Hand, communityCards: CommunityCards) =
   computeHandType(communityCards.cards + arrayOf(hand.cards.first, hand.cards.second))
 
-fun computeHandType(cards: Array<Card>): Pair<HandType, Array<Card>> {
+//fun computeHandTypePair(cards: Array<Card>): Pair<HandType, Array<Card>> {
+//  HandType.values().forEach {
+//    if (it.check(cards)) {
+//      return Pair(it, it.getCards(cards))
+//    }
+//  }
+//  throw RuntimeException("This shouldn't Happen. High Card should always return true. Check your code")
+//}
+
+fun computeHandType(cards: Array<Card>): HandType {
   HandType.values().forEach {
     if (it.check(cards)) {
-      return Pair(it, it.getCards(cards))
+      return it
     }
   }
   throw RuntimeException("This shouldn't Happen. High Card should always return true. Check your code")
 }
 
-fun computeWinner(
-  player1: Hand,
-  player2: Hand,
-  communityCards: CommunityCards
-): Triple<HandResult, Pair<HandType, Array<Card>>, Pair<HandType, Array<Card>>> {
-  val player1Pair = computeHandType(player1, communityCards)
-  val player2Pair = computeHandType(player2, communityCards)
-  return computeWinner(player1Pair, player2Pair)
-}
+
+//fun computeWinner(
+//  player1: Hand,
+//  player2: Hand,
+//  communityCards: CommunityCards
+//): Triple<HandResult, Pair<HandType, Array<Card>>, Pair<HandType, Array<Card>>> {
+//  val player1Pair = computeHandType(player1, communityCards)
+//  val player2Pair = computeHandType(player2, communityCards)
+//  return computeWinner(player1Pair, player2Pair)
+//}
 
 fun computeWinner(
   player1: Array<Card>,
   player2: Array<Card>
-): Triple<HandResult, Pair<HandType, Array<Card>>, Pair<HandType, Array<Card>>> {
-  val player1Pair = computeHandType(player1)
-  val player2Pair = computeHandType(player2)
-  return computeWinner(player1Pair, player2Pair)
+): Triple<HandResult, HandType, HandType> {
+  val player1HandType = computeHandType(player1)
+  val player2HandType = computeHandType(player2)
+  val compareTo = player1HandType.compareTo(player2HandType)
+  val handResult =  when {
+    compareTo > 0 -> PLAYER_2_WINS
+    compareTo < 0 -> PLAYER_1_WINS
+    else -> player1HandType.compareCards(player1HandType.getCards(player1), player1HandType.getCards(player2))
+  }
+  return Triple(handResult, player1HandType, player2HandType)
 }
 
 
@@ -402,8 +420,8 @@ private fun computeWinner(
   val (player2HandType, player2Cards) = player2Pair
   val compareTo = player1HandType.compareTo(player2HandType)
   val resultType = when {
-    compareTo > 0 -> HandResult.PLAYER_2_WINS
-    compareTo < 0 -> HandResult.PLAYER_1_WINS
+    compareTo > 0 -> PLAYER_2_WINS
+    compareTo < 0 -> PLAYER_1_WINS
     compareTo == 0 -> player1HandType.compareCards(player1Cards, player2Cards)
     else -> throw RuntimeException("This shouldn't happen")
   }
