@@ -102,7 +102,7 @@ private fun straightFaceComparer(player1Cards: Array<Card>, player2Cards: Array<
 private fun highestFaceComparer(player1Cards: Array<Card>, player2Cards: Array<Card>) =
   highestFaceComparer(player1Cards, player2Cards) { HandResult.SPLIT }
 
-private fun highestFaceComparer(
+private inline fun highestFaceComparer(
   player1Cards: Array<Card>,
   player2Cards: Array<Card>,
   equalCase: () -> HandResult
@@ -132,7 +132,7 @@ private fun highestCards(cards: Array<out Card>, n: Int = 5): Array<Card> {
   return Array(n) { cards[it] }
 }
 
-private fun findStraight(cards: Array<out Card>, next: (Card) -> Card?): Array<Card> {
+private inline fun findStraight(cards: Array<out Card>, next: (Card) -> Card?): Array<Card> {
   cards.sortByDescending { it.face }
   val result = Array(5) { cards[it] }
   for (card in cards) {
@@ -153,7 +153,7 @@ private fun findStraight(cards: Array<out Card>, next: (Card) -> Card?): Array<C
   throw RuntimeException("This shouldn't happen")
 }
 
-private fun checkStraight(cards: Array<out Card>, next: (Card) -> Card?): Boolean {
+private inline fun checkStraight(cards: Array<out Card>, next: (Card) -> Card?): Boolean {
   cards.forEach {
     var i = 0
     var previousCard = it
