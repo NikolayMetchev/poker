@@ -356,9 +356,7 @@ enum class HandType(
   ONE_PAIR(nOfAKindChecker(2), nOfAKindFinder(2), nOfAKindComparer(2)),
   HIGH_CARD({ true }, { highestCards(this, 5) }, ::highestFaceComparer);
 
-  //fun check(cards: Array<Card>) = checker(cards)
   fun check(cards: Array<out Card>) = checker(cards)
-
   fun getCards(cards: Array<Card>): Array<Card> = getter(cards)
   fun compareCards(player1Cards: Array<Card>, player2Cards: Array<Card>): HandResult =
     comparer(player1Cards, player2Cards)
@@ -366,15 +364,6 @@ enum class HandType(
 
 fun computeHandType(hand: Hand, communityCards: CommunityCards) =
   computeHandType(communityCards.cards + arrayOf(hand.cards.first, hand.cards.second))
-
-//fun computeHandTypePair(cards: Array<Card>): Pair<HandType, Array<Card>> {
-//  HandType.values().forEach {
-//    if (it.check(cards)) {
-//      return Pair(it, it.getCards(cards))
-//    }
-//  }
-//  throw RuntimeException("This shouldn't Happen. High Card should always return true. Check your code")
-//}
 
 fun computeHandType(cards: Array<Card>): HandType {
   HandType.values().forEach {
@@ -384,17 +373,6 @@ fun computeHandType(cards: Array<Card>): HandType {
   }
   throw RuntimeException("This shouldn't Happen. High Card should always return true. Check your code")
 }
-
-
-//fun computeWinner(
-//  player1: Hand,
-//  player2: Hand,
-//  communityCards: CommunityCards
-//): Triple<HandResult, Pair<HandType, Array<Card>>, Pair<HandType, Array<Card>>> {
-//  val player1Pair = computeHandType(player1, communityCards)
-//  val player2Pair = computeHandType(player2, communityCards)
-//  return computeWinner(player1Pair, player2Pair)
-//}
 
 fun computeWinner(
   player1: Array<Card>,
@@ -409,21 +387,4 @@ fun computeWinner(
     else -> player1HandType.compareCards(player1HandType.getCards(player1), player1HandType.getCards(player2))
   }
   return Triple(handResult, player1HandType, player2HandType)
-}
-
-
-private fun computeWinner(
-  player1Pair: Pair<HandType, Array<Card>>,
-  player2Pair: Pair<HandType, Array<Card>>
-): Triple<HandResult, Pair<HandType, Array<Card>>, Pair<HandType, Array<Card>>> {
-  val (player1HandType, player1Cards) = player1Pair
-  val (player2HandType, player2Cards) = player2Pair
-  val compareTo = player1HandType.compareTo(player2HandType)
-  val resultType = when {
-    compareTo > 0 -> PLAYER_2_WINS
-    compareTo < 0 -> PLAYER_1_WINS
-    compareTo == 0 -> player1HandType.compareCards(player1Cards, player2Cards)
-    else -> throw RuntimeException("This shouldn't happen")
-  }
-  return Triple(resultType, player1Pair, player2Pair)
 }
