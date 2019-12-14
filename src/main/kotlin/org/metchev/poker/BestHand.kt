@@ -246,6 +246,7 @@ enum class HandType(
       }
       if (i == 3) {
         threeOfAKindFace = card.face
+        break
       }
     }
     if (threeOfAKindFace == null) {
