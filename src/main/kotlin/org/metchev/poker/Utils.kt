@@ -1,12 +1,14 @@
 package org.metchev.poker
 
 @ExperimentalUnsignedTypes
-fun nTuples(n: UInt, cards: List<Card>): Sequence<Array<Card>> {
-  val myCards = cards.toTypedArray()
+fun nTuples(n: UInt, cards: List<Card>) = nTuples(n, cards.toTypedArray())
+
+@ExperimentalUnsignedTypes
+fun nTuples(n: UInt, myCards: Array<Card>): Sequence<Array<Card>> {
   val vars: Array<Int> = Array(n.toInt()) { it }
   val result: Array<Card> = Array(n.toInt()) { myCards[vars[it]] }
   return generateSequence {
-    if (vars[0] > cards.size - n.toInt()) {
+    if (vars[0] > myCards.size - n.toInt()) {
       return@generateSequence null
     }
     var i = 0
@@ -14,7 +16,7 @@ fun nTuples(n: UInt, cards: List<Card>): Sequence<Array<Card>> {
       result[i] = myCards[vars[i]]
       i++
     }
-    increment(vars, (n - 1u).toInt(), n, cards.size)
+    increment(vars, (n - 1u).toInt(), n, myCards.size)
     result
   }
 }
