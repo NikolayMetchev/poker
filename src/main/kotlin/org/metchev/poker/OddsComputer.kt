@@ -4,6 +4,8 @@ import kotlinx.coroutines.*
 import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
+import kotlin.collections.HashMap
+
 
 @ExperimentalUnsignedTypes
 fun computeOdds(player1Card1: Card, player1Card2: Card, player2Card1: Card, player2Card2: Card) =
@@ -11,6 +13,10 @@ fun computeOdds(player1Card1: Card, player1Card2: Card, player2Card1: Card, play
 
 @ExperimentalUnsignedTypes
 fun computeOdds(player1Hand: Hand, player2Hand: Hand): Map<HandResult, Int> {
+  val result = ODDS_CACHE.get(player1Hand.cards.first, player1Hand.cards.second, player2Hand.cards.first, player2Hand.cards.second)
+  if (result != null) {
+    return result
+  }
   val deck = Deck()
   deck.remove(player1Hand.cards)
   deck.remove(player2Hand.cards)
@@ -30,7 +36,7 @@ fun computeOdds(player1Hand: Hand, player2Hand: Hand): Map<HandResult, Int> {
     }
   }
 
-  return nTuples
+  val odds = nTuples
     .map { communityTuples ->
       var i = 0
       while (i < 5) {
@@ -48,6 +54,8 @@ fun computeOdds(player1Hand: Hand, player2Hand: Hand): Map<HandResult, Int> {
     }
     .groupingBy { it }
     .eachCountTo(TreeMap())
+  ODDS_CACHE.put(player1Hand.cards.first, player1Hand.cards.second, player2Hand.cards.first, player2Hand.cards.second, odds)
+  return odds
 }
 
 @ExperimentalUnsignedTypes
@@ -61,7 +69,7 @@ suspend fun computeOdds(player1Hand: Hand): Map<HandResult, Int> {
   return player2Tuples
     .pmap {
       computeOdds(player1Hand, Hand(it[0], it[1])).also {
-        println("${Thread.currentThread().name} Done ${combos.addAndGet(1L)} of ${player2Tuples.size} combos")
+        println("${LocalDateTime.now()} ${Thread.currentThread().name} $player1Hand ${combos.addAndGet(1L)} of ${player2Tuples.size} combos")
       }
     }
     .reduce { acc, map ->
@@ -71,19 +79,25 @@ suspend fun computeOdds(player1Hand: Hand): Map<HandResult, Int> {
     }
 }
 
-@ExperimentalUnsignedTypes
-fun main() {
-  println(LocalDateTime.now())
-  println(computeOdds(Card.QUEEN_OF_DIAMONDS, Card.JACK_OF_CLUBS, Card.JACK_OF_SPADES, Card.`10_OF_HEARTS`))
-  println(LocalDateTime.now())
-}
-
 //@ExperimentalUnsignedTypes
-//fun main() = runBlocking {
+//fun main() {
 //  println(LocalDateTime.now())
-//  println(computeOdds(Hand(Card.ACE_OF_DIAMONDS, Card.ACE_OF_CLUBS)))
+//  println(computeOdds(Card.QUEEN_OF_DIAMONDS, Card.JACK_OF_CLUBS, Card.JACK_OF_SPADES, Card.`10_OF_HEARTS`))
 //  println(LocalDateTime.now())
 //}
+
+
+@ExperimentalUnsignedTypes
+fun main() = runBlocking {
+  val deck = Array(Card.values().size) {Card.values()[it]}
+  val nTuples = deck.nTuples(2u)
+  nTuples.forEach {
+    println("${LocalDateTime.now()} ${it[0]}, ${it[1]}")
+    println("${LocalDateTime.now()} ${computeOdds(Hand(it[0], it[1]))}")
+    println("${LocalDateTime.now()} ${it[0]}, ${it[1]}")
+  }
+  ODDS_CACHE.save()
+}
 
 suspend fun <A, B> Iterable<A>.pmap(f: suspend (A) -> B): List<B> = coroutineScope {
   map { GlobalScope.async { f(it) } }.awaitAll()

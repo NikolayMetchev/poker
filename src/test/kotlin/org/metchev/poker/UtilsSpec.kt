@@ -2,6 +2,7 @@ package org.metchev.poker
 
 import org.metchev.poker.Card.*
 import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.Suite
 import org.spekframework.spek2.style.specification.describe
 import kotlin.test.assertEquals
 
@@ -15,3 +16,20 @@ class ArrayMinusSpec : Spek({
     }
   }
 })
+
+class DeckBitSetSpec: Spek ({
+  describe("To And From BitSet") {
+    bitSetTest("To and From 1 Card", `10_OF_DIAMONDS`)
+    bitSetTest("To and From many Card", `10_OF_DIAMONDS`, ACE_OF_SPADES, JACK_OF_DIAMONDS, `6_OF_SPADES`)
+    bitSetTest("To and From many Card different order", `10_OF_DIAMONDS`, JACK_OF_DIAMONDS, `6_OF_SPADES`, ACE_OF_SPADES)
+
+  }
+})
+
+private fun Suite.bitSetTest(name: String, vararg cards: Card) {
+  it(name) {
+    val toBitSet = cards.toBitSet()
+    val fromBitSet = toBitSet.fromBitSet()
+    assertEquals(cards.toSortedSet(), fromBitSet.toSortedSet())
+  }
+}

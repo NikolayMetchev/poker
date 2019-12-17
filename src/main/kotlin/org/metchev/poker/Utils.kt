@@ -1,5 +1,7 @@
 package org.metchev.poker
 
+import java.util.*
+
 @ExperimentalUnsignedTypes
 fun nTuples(n: UInt, cards: List<Card>) = nTuples(n, cards.toTypedArray())
 
@@ -78,5 +80,21 @@ fun increment(vars: Array<Int>, index: Int, n: UInt, totalNumberOfCards: Int) {
       increment(vars, (index - 1), n, totalNumberOfCards)
       vars[index] = vars[index - 1] + 1
     }
+  }
+}
+
+fun Array<out Card>.toBitSet() : Long {
+  val result = BitSet(Card.values().size)
+  for (card in this) {
+    result.set(card.ordinal)
+  }
+  return result.toLongArray()[0]
+}
+
+fun Long.fromBitSet() : Array<Card> {
+  val bitSet: BitSet = BitSet.valueOf(longArrayOf(this))
+  var nextSetBit = bitSet.nextSetBit(0)
+  return Array(bitSet.cardinality()) {
+    Card.values()[nextSetBit].also { nextSetBit = bitSet.nextSetBit(nextSetBit + 1) }
   }
 }
