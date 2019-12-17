@@ -394,12 +394,16 @@ fun computeWinnerResult(
   player1: Array<Card>,
   player2: Array<Card>
 ): HandResult {
-  val player1HandType = computeHandType(player1)
-  val player2HandType = computeHandType(player2)
-  val compareTo = player1HandType.compareTo(player2HandType)
-  return when {
-    compareTo > 0 -> PLAYER_2_WINS
-    compareTo < 0 -> PLAYER_1_WINS
-    else -> player1HandType.compareCards(player1HandType.getCards(player1), player1HandType.getCards(player2))
+  HandType.values().forEach {
+    if (it.check(player1)) {
+      return if (!it.check(player2)) {
+        PLAYER_1_WINS
+      } else {
+        it.compareCards(it.getCards(player1), it.getCards(player2))
+      }
+    } else if (it.check(player2)) {
+      return PLAYER_2_WINS
+    }
   }
+  throw RuntimeException("This shouldn't happen")
 }
