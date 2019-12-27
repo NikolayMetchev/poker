@@ -68,8 +68,9 @@ suspend fun computeOdds(player1Hand: Hand): Map<HandResult, Int> {
   val combos = AtomicLong(0L)
   return player2Tuples
     .pmap {
-      computeOdds(player1Hand, Hand(it[0], it[1])).also {
-        println("${LocalDateTime.now()} ${Thread.currentThread().name} $player1Hand ${combos.addAndGet(1L)} of ${player2Tuples.size} combos")
+      val player2Hand = Hand(it[0], it[1])
+      computeOdds(player1Hand, player2Hand).also {
+        println("${LocalDateTime.now()} ${Thread.currentThread().name} $player1Hand ${player2Hand} ${combos.addAndGet(1L)} of ${player2Tuples.size} combos")
       }
     }
     .reduce { acc, map ->
@@ -91,10 +92,12 @@ suspend fun computeOdds(player1Hand: Hand): Map<HandResult, Int> {
 fun main() = runBlocking {
   val deck = Array(Card.values().size) {Card.values()[it]}
   val nTuples = deck.nTuples(2u)
+  var i = 0
   nTuples.forEach {
-    println("${LocalDateTime.now()} ${it[0]}, ${it[1]}")
+    println("${LocalDateTime.now()} ${it[0]}, ${it[1]} $i of 1326")
     println("${LocalDateTime.now()} ${computeOdds(Hand(it[0], it[1]))}")
-    println("${LocalDateTime.now()} ${it[0]}, ${it[1]}")
+    println("${LocalDateTime.now()} ${it[0]}, ${it[1]} $i of 1326")
+    i++
   }
   ODDS_CACHE.save()
 }

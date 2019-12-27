@@ -91,6 +91,8 @@ enum class Card(val face: Face, val suit: Suit) {
   fun previousByFace() = previousByFace[ordinal]
 }
 
+fun Card.mapSuit(suitMapping: Map<Suit, Suit>) = Card.get(face, suitMapping[suit] ?: suit)
+
 class Deck() {
   private val cards: MutableList<Card> = Card.values().mapTo(ArrayList(Card.values().size)) { it }
 

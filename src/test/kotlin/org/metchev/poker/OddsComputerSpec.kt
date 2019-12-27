@@ -45,5 +45,6 @@ private fun Suite.oddsTest(
     assertEquals(player1Wins, computeOdds[PLAYER_1_WINS])
     assertEquals(player2Wins, computeOdds[PLAYER_2_WINS])
     assertEquals(splits, computeOdds[SPLIT])
+    ODDS_CACHE.save()
   }
 }
