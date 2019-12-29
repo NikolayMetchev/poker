@@ -9,7 +9,7 @@ import kotlin.collections.HashMap
 import kotlin.collections.set
 
 @Serializable
-data class OddsCache(private val map: MutableMap<Key, Odds> = HashMap()) {
+data class OddsCache(val map: MutableMap<Key, Odds> = HashMap()) {
   fun size() = map.size
 
   @ExperimentalUnsignedTypes
@@ -82,9 +82,9 @@ fun getKey(
     player2Card2
   }
   val player1OverlappingSuitState =
-    overlappingSuitState(player1Suits, player2Suits, player1HigherFaceCard, player2HigherFaceCard, player1FaceState)
+    overlappingSuitState(player1Suits, player2Suits, player1HigherFaceCard, player2HigherFaceCard, player1FaceState, player2FaceState, player1SuitState)
   val player2OverlappingSuitState =
-    overlappingSuitState(player2Suits, player1Suits, player2HigherFaceCard, player1HigherFaceCard, player2FaceState)
+    overlappingSuitState(player2Suits, player1Suits, player2HigherFaceCard, player1HigherFaceCard, player2FaceState, player2FaceState, player2SuitState)
 
   val player1OverlappingFaceState = overlappingFaceState(player1Faces, player2Faces, player1HigherFace)
   val player2OverlappingFaceState = overlappingFaceState(player2Faces, player1Faces, player2HigherFace)
@@ -106,15 +106,17 @@ private fun overlappingSuitState(
   player2Suits: Array<Suit>,
   player1HigherFaceCard: Card,
   player2HigherFaceCard: Card,
-  faceState: FaceState
+  player1FaceState: FaceState,
+  player2FaceState: FaceState,
+  player1SuitState: SuitState
 ) = when {
-  player1Suits.containsAll(player2Suits) -> if (faceState is SameFaceState || player1HigherFaceCard.suit == player2HigherFaceCard.suit) {
+  player1Suits.containsAll(player2Suits) -> if (player1FaceState is SameFaceState || player2FaceState is SameFaceState|| player1SuitState == SuitState.Same || player1HigherFaceCard.suit == player2HigherFaceCard.suit) {
     BothHigher
   } else {
     BothHigherVsLower
   }
   player1Suits.containsNone(player2Suits) -> Neither
-  faceState is SameFaceState -> Higher
+  player1FaceState is SameFaceState -> Higher
   player1HigherFaceCard.suit in player2Suits -> Higher
   else -> Lower
 }
@@ -227,4 +229,9 @@ val ODDS_CACHE = if (cacheFile.exists()) {
     .also { println("Loading cache from disk with ${it.size()} entries") }
 } else {
   OddsCache().also { println("Fresh cache") }
+}
+
+fun main() {
+  println(ODDS_CACHE.map.entries.groupBy { it.value }.filter { it.value.size > 1 })
+
 }

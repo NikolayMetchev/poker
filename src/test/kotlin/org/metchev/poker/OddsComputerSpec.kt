@@ -31,6 +31,10 @@ class OddsComputerSpec : Spek({
       665146081, 1311884399, 120541920
     )
     oddsTest(
+      "72 suited", `7_OF_SPADES`, `2_OF_SPADES`,
+      743376257, 1240253676, 113942467
+    )
+    oddsTest(
       "AA",
       ACE_OF_SPADES, ACE_OF_HEARTS,
       1781508418, 304661670, 11402312
@@ -181,7 +185,7 @@ private fun Suite.oddsTest(
 
       checkOdds(mappedPlayer1Card1, mappedPlayer1Card2, player1Wins, player2Wins, splits)
       checkOdds(mappedPlayer1Card2, mappedPlayer1Card1, player1Wins, player2Wins, splits)
-      ODDS_CACHE.save()
     }
+    ODDS_CACHE.save()
   }
 }

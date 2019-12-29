@@ -1,6 +1,7 @@
 package org.metchev.poker
 
 import kotlinx.coroutines.*
+import org.metchev.poker.Card
 import java.time.LocalDateTime
 import java.util.concurrent.atomic.AtomicLong
 
@@ -99,7 +100,7 @@ suspend fun computeOdds(player1Hand: Hand): Odds {
 
 @ExperimentalUnsignedTypes
 fun main()  = runBlocking {
-  println(computeOdds(Hand(Card.ACE_OF_SPADES, Card.ACE_OF_HEARTS)))
+  println(computeOdds(Hand(Card.`7_OF_SPADES`, Card.`2_OF_SPADES`)))
   ODDS_CACHE.save()
 }
 

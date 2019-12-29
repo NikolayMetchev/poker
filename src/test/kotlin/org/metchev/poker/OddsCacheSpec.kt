@@ -1,6 +1,9 @@
 package org.metchev.poker
 
 import org.metchev.poker.Card.*
+import org.metchev.poker.Face.*
+import org.metchev.poker.OverlappingFaceState.Neither
+import org.metchev.poker.OverlappingSuitState.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.Suite
 import org.spekframework.spek2.style.specification.describe
@@ -65,6 +68,31 @@ class OddsCacheSpec : Spek({
     val (key, _) = getKey(ACE_OF_HEARTS, ACE_OF_SPADES, ACE_OF_CLUBS, ACE_OF_DIAMONDS)
     assertEquals(key.player1OddsCacheKeyState, key.player2OddsCacheKeyState)
   }
+  describe("Overlapping Suit State") {
+    val (key, _) = getKey(ACE_OF_HEARTS, ACE_OF_SPADES, KING_OF_HEARTS, JACK_OF_DIAMONDS)
+    assertEquals(key.player1OddsCacheKeyState.overlappingSuitState, Higher)
+    assertEquals(key.player2OddsCacheKeyState.overlappingSuitState, Higher)
+  }
+  describe("Overlapping Suit State") {
+    val (key, _) = getKey(ACE_OF_HEARTS, ACE_OF_SPADES, KING_OF_DIAMONDS, JACK_OF_HEARTS)
+    assertEquals(key.player2OddsCacheKeyState.overlappingSuitState, Higher)
+    assertEquals(key.player2OddsCacheKeyState.overlappingFaceState, Neither)
+    assertEquals(key.player2OddsCacheKeyState.faceState, SameFaceState(ACE))
+    assertEquals(key.player1OddsCacheKeyState.overlappingSuitState, Lower)
+    assertEquals(key.player1OddsCacheKeyState.overlappingFaceState, Neither)
+    assertEquals(key.player1OddsCacheKeyState.faceState, DifferentFaceState(KING, JACK))
+  }
+
+  describe("Overlapping Suit State") {
+    val (key, _) = getKey(ACE_OF_SPADES, ACE_OF_DIAMONDS, KING_OF_DIAMONDS, `10_OF_DIAMONDS`)
+    assertEquals(key.player2OddsCacheKeyState.faceState, SameFaceState(ACE))
+    assertEquals(key.player2OddsCacheKeyState.overlappingSuitState, Higher)
+    assertEquals(key.player2OddsCacheKeyState.overlappingFaceState, Neither)
+    assertEquals(key.player1OddsCacheKeyState.faceState, DifferentFaceState(KING, `10`))
+    assertEquals(key.player1OddsCacheKeyState.overlappingSuitState, BothHigher)
+    assertEquals(key.player1OddsCacheKeyState.overlappingFaceState, Neither)
+  }
+
 })
 
 private fun Suite.suitTest(
