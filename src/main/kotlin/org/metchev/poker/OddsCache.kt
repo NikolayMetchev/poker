@@ -84,7 +84,7 @@ fun getKey(
   val player1OverlappingSuitState =
     overlappingSuitState(player1Suits, player2Suits, player1HigherFaceCard, player2HigherFaceCard, player1FaceState, player2FaceState, player1SuitState)
   val player2OverlappingSuitState =
-    overlappingSuitState(player2Suits, player1Suits, player2HigherFaceCard, player1HigherFaceCard, player2FaceState, player2FaceState, player2SuitState)
+    overlappingSuitState(player2Suits, player1Suits, player2HigherFaceCard, player1HigherFaceCard, player2FaceState, player1FaceState, player2SuitState)
 
   val player1OverlappingFaceState = overlappingFaceState(player1Faces, player2Faces, player1HigherFace)
   val player2OverlappingFaceState = overlappingFaceState(player2Faces, player1Faces, player2HigherFace)

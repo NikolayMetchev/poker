@@ -93,6 +93,18 @@ class OddsCacheSpec : Spek({
     assertEquals(key.player1OddsCacheKeyState.overlappingFaceState, Neither)
   }
 
+  describe("Overlapping Suit State") {
+    val (key, _) = getKey(ACE_OF_DIAMONDS, ACE_OF_SPADES, KING_OF_SPADES, `2_OF_DIAMONDS`)
+    assertEquals(key.player2OddsCacheKeyState.faceState, SameFaceState(ACE))
+    assertEquals(key.player2OddsCacheKeyState.suitState, SuitState.Different)
+    assertEquals(key.player2OddsCacheKeyState.overlappingSuitState, BothHigher)
+    assertEquals(key.player2OddsCacheKeyState.overlappingFaceState, Neither)
+    assertEquals(key.player1OddsCacheKeyState.faceState, DifferentFaceState(KING, `2`))
+    assertEquals(key.player1OddsCacheKeyState.suitState, SuitState.Different)
+    assertEquals(key.player1OddsCacheKeyState.overlappingSuitState, BothHigher)
+    assertEquals(key.player1OddsCacheKeyState.overlappingFaceState, Neither)
+  }
+
 })
 
 private fun Suite.suitTest(
