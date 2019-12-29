@@ -1,7 +1,7 @@
 package org.metchev.poker
 
+import kotlinx.coroutines.runBlocking
 import org.metchev.poker.Card.*
-import org.metchev.poker.HandResult.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.Suite
 import org.spekframework.spek2.style.specification.describe
@@ -25,6 +25,16 @@ class OddsComputerSpec : Spek({
       QUEEN_OF_DIAMONDS, JACK_OF_CLUBS, JACK_OF_SPADES, `10_OF_HEARTS`,
       1217747, 431345, 63212
     )
+    oddsTest(
+      "72 offsuit",
+      `7_OF_SPADES`, `2_OF_HEARTS`,
+      665146081, 1311884399, 120541920
+    )
+    oddsTest(
+      "AA",
+      ACE_OF_SPADES, ACE_OF_HEARTS,
+      1781508418, 304661670, 11402312
+    )
   }
 })
 
@@ -40,10 +50,138 @@ private fun Suite.oddsTest(
   splits: Int
 ) {
   it(description, timeout = 0L) {
-    val computeOdds =
-      computeOdds(player1Card1, player1Card2, player2Card1, player2Card2)
-    assertEquals(player1Wins, computeOdds[PLAYER_1_WINS])
-    assertEquals(player2Wins, computeOdds[PLAYER_2_WINS])
-    assertEquals(splits, computeOdds[SPLIT])
+    suitMappings.forEach {
+      val mappedPlayer1Card1 = player1Card1.mapSuit(it)
+      val mappedPlayer1Card2 = player1Card2.mapSuit(it)
+      val mappedPlayer2Card1 = player2Card1.mapSuit(it)
+      val mappedPlayer2Card2 = player2Card2.mapSuit(it)
+
+      checkOdds(
+        mappedPlayer1Card1,
+        mappedPlayer1Card2,
+        mappedPlayer2Card1,
+        mappedPlayer2Card2,
+        player1Wins,
+        player2Wins,
+        splits
+      )
+      checkOdds(
+        mappedPlayer1Card2,
+        mappedPlayer1Card1,
+        mappedPlayer2Card1,
+        mappedPlayer2Card2,
+        player1Wins,
+        player2Wins,
+        splits
+      )
+      checkOdds(
+        mappedPlayer1Card1,
+        mappedPlayer1Card2,
+        mappedPlayer2Card2,
+        mappedPlayer2Card1,
+        player1Wins,
+        player2Wins,
+        splits
+      )
+      checkOdds(
+        mappedPlayer1Card2,
+        mappedPlayer1Card1,
+        mappedPlayer2Card2,
+        mappedPlayer2Card1,
+        player1Wins,
+        player2Wins,
+        splits
+      )
+
+      checkOdds(
+        mappedPlayer2Card1,
+        mappedPlayer2Card2,
+        mappedPlayer1Card1,
+        mappedPlayer1Card2,
+        player2Wins,
+        player1Wins,
+        splits
+      )
+      checkOdds(
+        mappedPlayer2Card1,
+        mappedPlayer2Card2,
+        mappedPlayer1Card2,
+        mappedPlayer1Card1,
+        player2Wins,
+        player1Wins,
+        splits
+      )
+      checkOdds(
+        mappedPlayer2Card2,
+        mappedPlayer2Card1,
+        mappedPlayer1Card1,
+        mappedPlayer1Card2,
+        player2Wins,
+        player1Wins,
+        splits
+      )
+      checkOdds(
+        mappedPlayer2Card2,
+        mappedPlayer2Card1,
+        mappedPlayer1Card2,
+        mappedPlayer1Card1,
+        player2Wins,
+        player1Wins,
+        splits
+      )
+    }
+    ODDS_CACHE.save()
+  }
+}
+
+@ExperimentalUnsignedTypes
+private fun checkOdds(
+  player1Card1: Card,
+  player1Card2: Card,
+  player2Card1: Card,
+  player2Card2: Card,
+  player1Wins: Int,
+  player2Wins: Int,
+  splits: Int
+) {
+  val odds =
+    computeOdds(player1Card1, player1Card2, player2Card1, player2Card2)
+  assertEquals(player1Wins, odds.player1Wins)
+  assertEquals(player2Wins, odds.player2Wins)
+  assertEquals(splits, odds.split)
+}
+
+@ExperimentalUnsignedTypes
+private fun checkOdds(
+  player1Card1: Card,
+  player1Card2: Card,
+  player1Wins: Int,
+  player2Wins: Int,
+  splits: Int
+) = runBlocking {
+  val odds = computeOdds(Hand(player1Card1, player1Card2))
+  assertEquals(player1Wins, odds.player1Wins)
+  assertEquals(player2Wins, odds.player2Wins)
+  assertEquals(splits, odds.split)
+}
+
+@ExperimentalUnsignedTypes
+private fun Suite.oddsTest(
+  description: String,
+  player1Card1: Card,
+  player1Card2: Card,
+  player1Wins: Int,
+  player2Wins: Int,
+  splits: Int
+) {
+  it(description, timeout = 0L) {
+    suitMappings.forEach {
+      val mappedPlayer1Card1 = player1Card1.mapSuit(it)
+      val mappedPlayer1Card2 = player1Card2.mapSuit(it)
+
+      checkOdds(mappedPlayer1Card1, mappedPlayer1Card2, player1Wins, player2Wins, splits)
+      checkOdds(mappedPlayer1Card2, mappedPlayer1Card1, player1Wins, player2Wins, splits)
+      ODDS_CACHE.save()
+    }
   }
 }

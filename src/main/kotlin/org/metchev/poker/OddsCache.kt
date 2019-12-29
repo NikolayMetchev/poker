@@ -2,49 +2,47 @@ package org.metchev.poker
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoBuf
-import org.metchev.poker.HandResult.*
+import org.metchev.poker.OverlappingSuitState.*
 import java.io.File
 import java.util.*
 import kotlin.collections.HashMap
 import kotlin.collections.set
 
 @Serializable
-data class OddsCache(private val map: MutableMap<Key, Map<HandResult, Int>> = HashMap()) {
+data class OddsCache(private val map: MutableMap<Key, Odds> = HashMap()) {
   fun size() = map.size
 
   @ExperimentalUnsignedTypes
   @Synchronized
-  fun get(player1Card1: Card, player1Card2: Card, player2Card1: Card, player2Card2: Card): Map<HandResult, Int>? {
-    val key = getKey(player1Card1, player1Card2, player2Card1, player2Card2)
-    val odds = map[key.first]
-    val result = if (key.second && odds != null) {
-      mapOf(
-        PLAYER_2_WINS to odds[PLAYER_1_WINS]!!,
-        PLAYER_1_WINS to odds[PLAYER_2_WINS]!!,
-        SPLIT to odds[SPLIT]!!
-      )
+  fun get(player1Card1: Card, player1Card2: Card, player2Card1: Card, player2Card2: Card): Odds? {
+    val (key, flipped) = getKey(player1Card1, player1Card2, player2Card1, player2Card2)
+    val odds = map[key]
+    val result = if (flipped && odds != null) {
+      odds.flipped()
     } else {
       odds
     }
-    return result.also { if (it != null) { println("cache hit") }  }
+    return result.also {
+      if (it != null) {
+        println("cache hit")
+      }
+    }
   }
 
   @Synchronized
-  fun put(player1Card1: Card, player1Card2: Card, player2Card1: Card, player2Card2: Card, odds: Map<HandResult, Int>) {
-    val key = getKey(player1Card1, player1Card2, player2Card1, player2Card2)
-    if (key.second) {
-      map[key.first] = mapOf(
-        PLAYER_2_WINS to odds[PLAYER_1_WINS]!!,
-        PLAYER_1_WINS to odds[PLAYER_2_WINS]!!,
-        SPLIT to odds[SPLIT]!!)
+  fun put(player1Card1: Card, player1Card2: Card, player2Card1: Card, player2Card2: Card, odds: Odds) {
+    val (key, flipped) = getKey(player1Card1, player1Card2, player2Card1, player2Card2)
+    map[key] = if (flipped) {
+      odds.flipped()
     } else {
-      map[key.first] = odds
+      odds
     }
     if (map.size % 100 == 0) {
       save()
     }
   }
 
+  @Synchronized
   fun save() {
     println("Saving ${map.size} entries")
     cacheFile.writeBytes(ProtoBuf.dump(serializer(), this))
@@ -62,8 +60,8 @@ fun getKey(
   val player2Suits = arrayOf(player2Card1.suit, player2Card2.suit)
   val player1Faces = arrayOf(player1Card1.face, player1Card2.face)
   val player2Faces = arrayOf(player2Card1.face, player2Card2.face)
-  val player1HigherFace =  maxOf(player1Card1.face, player1Card2.face)
-  val player2HigherFace =  maxOf(player2Card1.face, player2Card2.face)
+  val player1HigherFace = maxOf(player1Card1.face, player1Card2.face)
+  val player2HigherFace = maxOf(player2Card1.face, player2Card2.face)
 
   val player1OddsCacheKeyState: OddsCacheKeyState
   val player2OddsCacheKeyState: OddsCacheKeyState
@@ -73,16 +71,30 @@ fun getKey(
   val player1FaceState = faceState(player1Card1, player1Card2)
   val player2FaceState = faceState(player2Card1, player2Card2)
 
-  val player1OverlappingSuitState = overlappingSuitState(player1Suits, player2Suits, player1HigherFace, player2Faces)
-  val player2OverlappingSuitState = overlappingSuitState(player2Suits, player1Suits, player2HigherFace, player1Faces)
+  val player1HigherFaceCard = if (player1HigherFace == player1Card1.face) {
+    player1Card1
+  } else {
+    player1Card2
+  }
+  val player2HigherFaceCard = if (player2HigherFace == player2Card1.face) {
+    player2Card1
+  } else {
+    player2Card2
+  }
+  val player1OverlappingSuitState =
+    overlappingSuitState(player1Suits, player2Suits, player1HigherFaceCard, player2HigherFaceCard, player1FaceState)
+  val player2OverlappingSuitState =
+    overlappingSuitState(player2Suits, player1Suits, player2HigherFaceCard, player1HigherFaceCard, player2FaceState)
 
   val player1OverlappingFaceState = overlappingFaceState(player1Faces, player2Faces, player1HigherFace)
   val player2OverlappingFaceState = overlappingFaceState(player2Faces, player1Faces, player2HigherFace)
 
-  player1OddsCacheKeyState = OddsCacheKeyState(player1SuitState, player1FaceState, player1OverlappingSuitState, player1OverlappingFaceState)
-  player2OddsCacheKeyState = OddsCacheKeyState(player2SuitState, player2FaceState, player2OverlappingSuitState, player2OverlappingFaceState)
+  player1OddsCacheKeyState =
+    OddsCacheKeyState(player1SuitState, player1FaceState, player1OverlappingSuitState, player1OverlappingFaceState)
+  player2OddsCacheKeyState =
+    OddsCacheKeyState(player2SuitState, player2FaceState, player2OverlappingSuitState, player2OverlappingFaceState)
 
-  return if (player1OddsCacheKeyState < player2OddsCacheKeyState) {
+  return if (player1OddsCacheKeyState <= player2OddsCacheKeyState) {
     Pair(Key(player1OddsCacheKeyState, player2OddsCacheKeyState), false)
   } else {
     Pair(Key(player2OddsCacheKeyState, player1OddsCacheKeyState), true)
@@ -92,13 +104,19 @@ fun getKey(
 private fun overlappingSuitState(
   player1Suits: Array<Suit>,
   player2Suits: Array<Suit>,
-  player1HigherFace: Face,
-  player2Faces: Array<Face>
+  player1HigherFaceCard: Card,
+  player2HigherFaceCard: Card,
+  faceState: FaceState
 ) = when {
-  player1Suits.containsAll(player2Suits) -> OverlappingSuitState.Both
-  player1Suits.containsNone(player2Suits) -> OverlappingSuitState.Neither
-  player1HigherFace in player2Faces -> OverlappingSuitState.Higher
-  else -> OverlappingSuitState.Lower
+  player1Suits.containsAll(player2Suits) -> if (faceState is SameFaceState || player1HigherFaceCard.suit == player2HigherFaceCard.suit) {
+    BothHigher
+  } else {
+    BothHigherVsLower
+  }
+  player1Suits.containsNone(player2Suits) -> Neither
+  faceState is SameFaceState -> Higher
+  player1HigherFaceCard.suit in player2Suits -> Higher
+  else -> Lower
 }
 
 private fun overlappingFaceState(
@@ -148,9 +166,7 @@ enum class SuitState {
 }
 
 @Serializable
-sealed class FaceState : Comparable<FaceState> {
-
-}
+sealed class FaceState : Comparable<FaceState>
 
 @Serializable
 data class SameFaceState(val face: Face) : FaceState() {
@@ -172,7 +188,8 @@ enum class OverlappingSuitState {
   Neither,
   Higher,
   Lower,
-  Both
+  BothHigher,
+  BothHigherVsLower
 }
 
 enum class OverlappingFaceState {
@@ -183,27 +200,31 @@ enum class OverlappingFaceState {
 }
 
 @Serializable
-data class OddsCacheKeyState(val suitState: SuitState,
-                             val faceState: FaceState,
-                             val overlappingSuitState: OverlappingSuitState,
-                             val overlappingFaceState: OverlappingFaceState)
-  : Comparable<OddsCacheKeyState> {
+data class OddsCacheKeyState(
+  val suitState: SuitState,
+  val faceState: FaceState,
+  val overlappingSuitState: OverlappingSuitState,
+  val overlappingFaceState: OverlappingFaceState
+) : Comparable<OddsCacheKeyState> {
   companion object {
-    val COMPARATOR = compareBy<OddsCacheKeyState> (
-      {it.suitState},
-      {it.faceState},
-      {it.overlappingSuitState},
-      {it.overlappingFaceState})
+    val COMPARATOR = compareBy<OddsCacheKeyState>(
+      { it.suitState },
+      { it.faceState },
+      { it.overlappingSuitState },
+      { it.overlappingFaceState })
   }
+
   override fun compareTo(other: OddsCacheKeyState) = COMPARATOR.compare(this, other)
 }
 
 @Serializable
 data class Key(val player1OddsCacheKeyState: OddsCacheKeyState, val player2OddsCacheKeyState: OddsCacheKeyState)
 
-
-
 private val cacheFile = File("poker_odds.cache")
 
-val ODDS_CACHE = if (cacheFile.exists()) { ProtoBuf.load(OddsCache.serializer(), cacheFile.readBytes()).also { println("Loading cache from disk with ${it.size()} entries")} } else {OddsCache().also { println("Fresh cache") }
+val ODDS_CACHE = if (cacheFile.exists()) {
+  ProtoBuf.load(OddsCache.serializer(), cacheFile.readBytes())
+    .also { println("Loading cache from disk with ${it.size()} entries") }
+} else {
+  OddsCache().also { println("Fresh cache") }
 }

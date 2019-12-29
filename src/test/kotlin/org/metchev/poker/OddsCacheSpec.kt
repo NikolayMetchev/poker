@@ -1,19 +1,19 @@
 package org.metchev.poker
 
 import org.metchev.poker.Card.*
-import org.metchev.poker.HandResult.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.Suite
 import org.spekframework.spek2.style.specification.describe
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 
 @ExperimentalUnsignedTypes
 class OddsCacheSpec : Spek({
   describe("Cache") {
     val oddsCache by memoized { OddsCache() }
     it("Ordering of cards not relevant") {
-      val odds = mapOf(PLAYER_1_WINS to 1410336, PLAYER_2_WINS to 292660, SPLIT to 9308)
-      val flippedOdds = mapOf(PLAYER_2_WINS to 1410336, PLAYER_1_WINS to 292660, SPLIT to 9308)
+      val odds = Odds(1410336, 292660, 9308)
+      val flippedOdds = odds.flipped()
       oddsCache.put(
         ACE_OF_DIAMONDS, ACE_OF_CLUBS, KING_OF_DIAMONDS, KING_OF_CLUBS,
         odds
@@ -28,8 +28,8 @@ class OddsCacheSpec : Spek({
       assertEquals(flippedOdds, oddsCache.get(KING_OF_CLUBS, KING_OF_DIAMONDS, ACE_OF_CLUBS, ACE_OF_DIAMONDS))
     }
     it("Suits of cards not relevant") {
-      val odds = mapOf(PLAYER_1_WINS to 1410336, PLAYER_2_WINS to 292660, SPLIT to 9308)
-      val flippedOdds = mapOf(PLAYER_2_WINS to 1410336, PLAYER_1_WINS to 292660, SPLIT to 9308)
+      val odds = Odds(1410336, 292660, 9308)
+      val flippedOdds = odds.flipped()
       oddsCache.put(
         ACE_OF_HEARTS, ACE_OF_SPADES, KING_OF_HEARTS, KING_OF_SPADES,
         odds
@@ -52,6 +52,18 @@ class OddsCacheSpec : Spek({
     suitTest("AK vs KJ no overlapping suits", ACE_OF_HEARTS, KING_OF_SPADES, KING_OF_CLUBS, JACK_OF_CLUBS)
     suitTest("AK vs KJ 1 overlapping suits", ACE_OF_HEARTS, KING_OF_SPADES, KING_OF_HEARTS, JACK_OF_CLUBS)
     suitTest("AK vs KJ 2 overlapping suits", ACE_OF_HEARTS, KING_OF_SPADES, KING_OF_HEARTS, JACK_OF_SPADES)
+  }
+  describe("Different Odds keys") {
+    val (key, _) = getKey(`7_OF_HEARTS`, `2_OF_SPADES`, `7_OF_SPADES`, `2_OF_CLUBS`)
+    assertNotEquals(key.player1OddsCacheKeyState, key.player2OddsCacheKeyState)
+  }
+  describe("Same Odds keys") {
+    val (key, _) = getKey(`7_OF_HEARTS`, `2_OF_SPADES`, `7_OF_SPADES`, `2_OF_HEARTS`)
+    assertEquals(key.player1OddsCacheKeyState, key.player2OddsCacheKeyState)
+  }
+  describe("Same Odds keys") {
+    val (key, _) = getKey(ACE_OF_HEARTS, ACE_OF_SPADES, ACE_OF_CLUBS, ACE_OF_DIAMONDS)
+    assertEquals(key.player1OddsCacheKeyState, key.player2OddsCacheKeyState)
   }
 })
 
