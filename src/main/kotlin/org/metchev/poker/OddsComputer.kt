@@ -84,25 +84,25 @@ suspend fun computeOdds(player1Hand: Hand): Odds {
 //}
 
 
-//@ExperimentalUnsignedTypes
-//fun main() = runBlocking {
-//  val deck = Array(Card.values().size) {Card.values()[it]}
-//  val nTuples = deck.nTuples(2u)
-//  var i = 0
-//  nTuples.forEach {
-//    println("${LocalDateTime.now()} ${it[0]}, ${it[1]} $i of 1326")
-//    println("${LocalDateTime.now()} ${computeOdds(Hand(it[0], it[1]))}")
-//    println("${LocalDateTime.now()} ${it[0]}, ${it[1]} $i of 1326")
-//    i++
-//  }
-//  ODDS_CACHE.save()
-//}
-
 @ExperimentalUnsignedTypes
-fun main()  = runBlocking {
-  println(computeOdds(Hand(Card.`7_OF_SPADES`, Card.`2_OF_SPADES`)))
+fun main() = runBlocking {
+  val deck = Array(Card.values().size) {Card.values()[it]}
+  val nTuples = deck.nTuples(2u)
+  var i = 1
+  nTuples.forEach {
+    println("${LocalDateTime.now()} ${it[0]}, ${it[1]} $i of 1326")
+    println("${LocalDateTime.now()} ${computeOdds(Hand(it[0], it[1]))}")
+    println("${LocalDateTime.now()} ${it[0]}, ${it[1]} $i of 1326")
+    i++
+  }
   ODDS_CACHE.save()
 }
+
+//@ExperimentalUnsignedTypes
+//fun main()  = runBlocking {
+//  println(computeOdds(Hand(Card.`7_OF_SPADES`, Card.`2_OF_SPADES`)))
+//  ODDS_CACHE.save()
+//}
 
 suspend fun <A, B> Iterable<A>.pmap(f: suspend (A) -> B): List<B> = coroutineScope {
   map { GlobalScope.async { f(it) } }.awaitAll()
