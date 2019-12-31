@@ -1,6 +1,5 @@
 package org.metchev.poker
 
-import kotlinx.coroutines.runBlocking
 import java.io.FileOutputStream
 import java.io.PrintWriter
 import java.util.zip.GZIPOutputStream
@@ -16,7 +15,7 @@ import java.util.zip.GZIPOutputStream
 //}
 
 @ExperimentalUnsignedTypes
-fun main() = runBlocking {
+fun main() {
   PrintWriter(GZIPOutputStream(FileOutputStream("allodds.out.gz"))).use { pw ->
     val deck = Array(Card.values().size) {Card.values()[it]}
     val nTuples = deck.nTuples(2u)
