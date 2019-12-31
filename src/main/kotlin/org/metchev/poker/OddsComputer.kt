@@ -7,16 +7,18 @@ import java.util.concurrent.atomic.AtomicLong
 
 
 @ExperimentalUnsignedTypes
-fun computeOdds(player1Card1: Card, player1Card2: Card, player2Card1: Card, player2Card2: Card) =
-  computeOdds(Hand(player1Card1, player1Card2), Hand(player2Card1, player2Card2))
+fun computeOdds(player1Card1: Card, player1Card2: Card, player2Card1: Card, player2Card2: Card, useCache: Boolean = true) =
+  computeOdds(Hand(player1Card1, player1Card2), Hand(player2Card1, player2Card2), useCache)
 
 @ExperimentalUnsignedTypes
-fun computeOdds(player1Hand: Hand, player2Hand: Hand): Odds {
+fun computeOdds(player1Hand: Hand, player2Hand: Hand, useCache: Boolean = true): Odds {
   val (player1Card1, player1Card2) = player1Hand.cards
   val (player2Card1, player2Card2) = player2Hand.cards
-  val result = ODDS_CACHE.get(player1Card1, player1Card2, player2Card1, player2Card2)
-  if (result != null) {
-    return result
+  if (useCache) {
+    val result = ODDS_CACHE.get(player1Card1, player1Card2, player2Card1, player2Card2)
+    if (result != null) {
+      return result
+    }
   }
   val deck = Deck()
   deck.remove(player1Hand.cards)
@@ -54,12 +56,14 @@ fun computeOdds(player1Hand: Hand, player2Hand: Hand): Odds {
       computeWinnerResult(player1Array, player2Array)
     }
     .fold ( Odds()) { odds, handResult ->  odds + handResult}
-  ODDS_CACHE.put(player1Card1, player1Card2, player2Card1, player2Card2, odds)
+  if (useCache) {
+    ODDS_CACHE.put(player1Card1, player1Card2, player2Card1, player2Card2, odds)
+  }
   return odds
 }
 
 @ExperimentalUnsignedTypes
-suspend fun computeOdds(player1Hand: Hand): Odds {
+suspend fun computeOdds(player1Hand: Hand, log: Boolean = false): Odds {
   var deck: Array<Card> = Array(Card.values().size) {
     Card.values()[it]
   }
@@ -70,7 +74,13 @@ suspend fun computeOdds(player1Hand: Hand): Odds {
     .pmap {
       val player2Hand = Hand(it[0], it[1])
       computeOdds(player1Hand, player2Hand).also {
-        println("${LocalDateTime.now()} ${Thread.currentThread().name} $player1Hand ${player2Hand} ${combos.addAndGet(1L)} of ${player2Tuples.size} combos")
+        if (log) {
+          println(
+            "${LocalDateTime.now()} ${Thread.currentThread().name} $player1Hand ${player2Hand} ${combos.addAndGet(
+              1L
+            )} of ${player2Tuples.size} combos"
+          )
+        }
       }
     }
     .reduce { acc, odds -> acc + odds}

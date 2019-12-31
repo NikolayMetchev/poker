@@ -14,7 +14,7 @@ data class OddsCache(val map: MutableMap<Key, Odds> = HashMap()) {
 
   @ExperimentalUnsignedTypes
   @Synchronized
-  fun get(player1Card1: Card, player1Card2: Card, player2Card1: Card, player2Card2: Card): Odds? {
+  fun get(player1Card1: Card, player1Card2: Card, player2Card1: Card, player2Card2: Card, log: Boolean = false): Odds? {
     val (key, flipped) = getKey(player1Card1, player1Card2, player2Card1, player2Card2)
     val odds = map[key]
     val result = if (flipped && odds != null) {
@@ -23,7 +23,7 @@ data class OddsCache(val map: MutableMap<Key, Odds> = HashMap()) {
       odds
     }
     return result.also {
-      if (it != null) {
+      if (log && it != null) {
         println("cache hit")
       }
     }
@@ -110,7 +110,7 @@ private fun overlappingSuitState(
   player2FaceState: FaceState,
   player1SuitState: SuitState
 ) = when {
-  player1Suits.containsAll(player2Suits) -> if (player1FaceState is SameFaceState || player2FaceState is SameFaceState|| player1SuitState == SuitState.Same || player1HigherFaceCard.suit == player2HigherFaceCard.suit) {
+  player1Suits.containsAll(player2Suits) -> if (player1FaceState is SameFaceState || player2FaceState is SameFaceState || player1SuitState == SuitState.Same || player1HigherFaceCard.suit == player2HigherFaceCard.suit) {
     BothHigher
   } else {
     BothHigherVsLower
@@ -232,6 +232,13 @@ val ODDS_CACHE = if (cacheFile.exists()) {
 }
 
 fun main() {
-  println(ODDS_CACHE.map.entries.groupBy { it.value }.filter { it.value.size > 1 })
+  val value = ODDS_CACHE.map.entries.groupBy { it.value }.filter { it.value.size == 2 }
+////    .entries.sortedByDescending { it.value.size }.iterator()
+//  val message = iterator.next()
+//  val value = message.value.map { it.key }.sorted()
 
+//  val message = ODDS_CACHE.map.entries.groupBy { it.value }.filter { it.value.size > 1 }
+//  println(message.entries.iterator().next())
+  println(value.size)
+  println(value)
 }
