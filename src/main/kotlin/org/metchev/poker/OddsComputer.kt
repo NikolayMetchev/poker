@@ -101,7 +101,7 @@ fun main() = runBlocking {
   var i = 1
   nTuples.forEach {
     println("${LocalDateTime.now()} ${it[0]}, ${it[1]} $i of 1326")
-    println("${LocalDateTime.now()} ${computeOdds(Hand(it[0], it[1]))}")
+    println("${LocalDateTime.now()} ${computeOdds(Hand(it[0], it[1]), true)}")
     println("${LocalDateTime.now()} ${it[0]}, ${it[1]} $i of 1326")
     i++
   }
@@ -110,7 +110,7 @@ fun main() = runBlocking {
 
 //@ExperimentalUnsignedTypes
 //fun main()  = runBlocking {
-//  println(computeOdds(Hand(Card.`7_OF_SPADES`, Card.`2_OF_SPADES`)))
+//  println(computeOdds(Hand(Card.`7_OF_SPADES`, Card.`2_OF_SPADES`), true))
 //  ODDS_CACHE.save()
 //}
 
